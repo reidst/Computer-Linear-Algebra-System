@@ -1,0 +1,35 @@
+<stmt-list> ::= <stmt>
+<stmt-list> ::= <stmt-list> <stmt>
+
+<stmt> ::= <expr> ";"
+<stmt> ::= <var> "=" <expr> ";"
+
+<mat> ::= "[" <mat-values> "]"
+
+<mat-values> ::= <row>
+<mat-values> ::= <mat-values> ":" <row>
+
+<row> ::= <num> | <row> <whitespace> <num>
+
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+<integer> ::= <digit> | <integer><digit>
+
+<num> ::= <integer> | "-" <integer> | <integer> "." <integer> | "-" <integer> "." <integer>
+
+<expr> ::= <function> "(" <expr> ")"
+<expr> ::= <expr> "+" <expr>
+<expr> ::= <expr> "-" <expr>
+<expr> ::= <expr> "*" <expr>
+<expr> ::= <expr> "/" <expr>
+<expr> ::= "(" <expr> ")"
+<expr> ::= "(" <expr> ")" "(" <expr> ")"
+<expr> ::= <term> "(" <expr> ")"
+<expr> ::= "(" <expr> ")" <term>
+<expr> ::= <term>
+<expr> ::= <var-mat> "\" <var-mat>
+
+<term> ::= <mat> | <var> | <num>
+<var-mat> ::= <mat> | <var>
+
+<fuction> ::= "INVERSE" | "RREF" | "EF" | "SPAN" | "DETERMINANT"
