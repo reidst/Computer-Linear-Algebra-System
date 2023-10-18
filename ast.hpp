@@ -3,7 +3,7 @@
 
 class Statement {};
 
-class StatementBlock : public Statement {
+class StatementBlock {
    std::vector<Statement> statements;
 };
 
@@ -39,16 +39,18 @@ class Variable : public Expression {
 };
 
 class Mat : public Expression {
-    std::vector<Vector> columnVectors;
+    Matrix mat;
 };
 
-class Vector : public Expression {
-    std::vector<boost::rational<int>> values;
+class Scal : public Expression {
+    Scalar value;
 };
 
-class Scalar : public Expression {
-    boost::rational<int> value;
-};
+typedef std::vector<Vector> Matrix;
+
+typedef std::vector<Scalar> Vector;
+
+typedef boost::rational<int> Scalar;
 
 enum Function {
     INVERSE,
@@ -65,4 +67,9 @@ enum UOperator {
 enum BOperator {
     ADD,
     MUL
+};
+
+enum VarType {
+    MatrixT,
+    ScalarT
 };
