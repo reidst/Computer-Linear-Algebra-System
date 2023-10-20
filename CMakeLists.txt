@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(linear-cas)
 
-set(BOOST_INCLUDE_LIBRARIES thread rational)
+set(BOOST_INCLUDE_LIBRARIES rational)
 set(BOOST_ENABLE_CMAKE ON)
 
 include(FetchContent)
@@ -18,7 +18,7 @@ FetchContent_MakeAvailable(lexy)
 
 add_executable(linear-cas)
 target_sources(linear-cas PRIVATE main.cpp)
-target_link_libraries(boost_test PRIVATE Boost::rational)
+target_link_libraries(linear-cas PRIVATE Boost::rational)
 target_link_libraries(linear-cas PRIVATE foonathan::lexy)
 
 set(CMAKE_CXX_STANDARD 20)
