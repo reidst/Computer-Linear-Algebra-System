@@ -1,54 +1,97 @@
 #include <vector>
+#include <valarray>
 #include <boost/rational.hpp>
+
 
 class Statement {};
 
 class StatementBlock {
-   std::vector<Statement> statements;
+    public:
+        std::vector<Statement> statements;
+        StatementBlock(std::vector<Statement> istatements)
+            : statements(istatements)
+            {}
 };
 
 class Assignment : public Statement {
-   Variable var;
-   Expression value;
+    public:
+        Variable var;
+        Expression value;
+        Assignment(Variable ivar, Expression ivalue)
+            : var(ivar)
+            , value(ivalue)
+            {}
 };
 
 class Evaluate : public Statement {
-    Expression exp;
+    public:
+        Expression exp;
+        Evaluate(Expression iexp)
+            : exp(iexp)
+            {}
 };
 
 class Expression {};
 
 class Bop : public Expression {
-    BOperator op;
-    Expression left;
-    Expression right;
+    public:
+        BOperator op;
+        Expression left;
+        Expression right;
+        Bop(BOperator iop, Expression ileft, Expression iright)
+            : op(iop)
+            , left(ileft)
+            , right(iright)
+            {}
 };
 
 class Uop : public Expression {
-    UOperator op;
-    Expression exp;
+    public:
+        UOperator op;
+        Expression exp;
+        Uop(UOperator iop, Expression iexp)
+            : op(iop)
+            , exp(iexp)
+            {}
 };
 
 class Func : public Expression {
-    Function func;
-    std::vector<Expression> args;
+    public:
+        Function func;
+        std::vector<Expression> args;
+        Func(Function ifunc, std::vector<Expression> iargs)
+            : func(ifunc)
+            , args(iargs)
+            {}
 };
 
 class Variable : public Expression {
-    std::vector<char> name;
+    public:
+        std::vector<char> name;
+        Variable(std::vector<char> iname)
+            : name(iname)
+            {}
 };
 
-class Mat : public Expression {
-    Matrix mat;
+class Matrix : public Expression {
+    public:
+        std::valarray<Scalar> values;
+        int row_size;
+        int col_size;
+        Matrix(std::valarray<Scalar> ivalues, int irow_size, int icol_size)
+            : values(ivalues)
+            , row_size(irow_size)
+            , col_size(icol_size)
+            {}
 };
 
 class Scal : public Expression {
-    Scalar value;
+    public:
+        Scalar value;
+        Scal(Scalar ivalue)
+            : value(ivalue)
+            {}
 };
-
-typedef std::vector<Vector> Matrix;
-
-typedef std::vector<Scalar> Vector;
 
 typedef boost::rational<int> Scalar;
 
@@ -66,7 +109,9 @@ enum UOperator {
 
 enum BOperator {
     ADD,
-    MUL
+    SUB,
+    MUL,
+    DIV
 };
 
 enum VarType {
