@@ -1,25 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 project(linear-cas)
 
-set(BOOST_INCLUDE_LIBRARIES rational)
-set(BOOST_ENABLE_CMAKE ON)
+include(/home/peanut-brother/school/MATH270/CAS/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
-include(FetchContent)
-FetchContent_Declare(
-  Boost
-  GIT_REPOSITORY https://github.com/boostorg/boost.git
-  GIT_SHALLOW TRUE
-  GIT_TAG boost-1.74.0
-)
-FetchContent_MakeAvailable(Boost)
-
-FetchContent_Declare(lexy URL https://lexy.foonathan.net/download/lexy-src.zip)
-FetchContent_MakeAvailable(lexy)
+find_package(Boost REQUIRED COMPONENTS rational)
+find_package(lexy CONFIG REQUIRED)
 
 add_executable(linear-cas)
 target_sources(linear-cas PRIVATE main.cpp)
-target_link_libraries(linear-cas PRIVATE Boost::rational)
-target_link_libraries(linear-cas PRIVATE foonathan::lexy)
+target_link_libraries(linear-cas PRIVATE Boost::boost Boost::rational)
+target_link_libraries(linear-cas PRIVATE foonathan::lexy foonathan::lexy::dev foonathan::lexy::ext foonathan::_lexy_base)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
