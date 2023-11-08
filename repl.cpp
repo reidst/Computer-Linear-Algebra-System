@@ -1,14 +1,9 @@
 #include <iostream>
+#include "parser.cpp"
 
 using namespace std;
 
-string eval(string response)
-{
-    string r = response;
-    return r;
-}
-
-int main()
+int repl()
 {
     cout << "Welcome to the REPL.";
     while (true)
@@ -20,7 +15,7 @@ int main()
             break;
         }
         string result;
-        result = eval(response);
+        result = parse(response);
         cout << result;
     }
     return 0;

@@ -3,77 +3,50 @@
 #include <boost/rational.hpp>
 
 
-class Statement {};
+struct Statement {};
 
-class StatementBlock {
-    public:
-        std::vector<Statement> statements;
-        StatementBlock(std::vector<Statement> istatements)
-            : statements(istatements)
-            {}
+struct StatementBlock {
+    std::vector<Statement> statements;
 };
 
-class Assignment : public Statement {
-    public:
-        Variable var;
-        Expression value;
-        Assignment(Variable ivar, Expression ivalue)
-            : var(ivar)
-            , value(ivalue)
-            {}
+struct Assignment : Statement {
+    Variable var;
+    Expression value;
 };
 
-class Evaluate : public Statement {
-    public:
-        Expression exp;
-        Evaluate(Expression iexp)
-            : exp(iexp)
-            {}
+struct Evaluate : Statement {
+    Expression exp;
 };
 
-class Expression {};
+struct Expression {};
 
-class Bop : public Expression {
-    public:
-        BOperator op;
-        Expression left;
-        Expression right;
-        Bop(BOperator iop, Expression ileft, Expression iright)
-            : op(iop)
-            , left(ileft)
-            , right(iright)
-            {}
+struct Bop : Expression {
+    BOperator op;
+    Expression left;
+    Expression right;
 };
 
-class Uop : public Expression {
-    public:
-        UOperator op;
-        Expression exp;
-        Uop(UOperator iop, Expression iexp)
-            : op(iop)
-            , exp(iexp)
-            {}
+struct Uop : Expression {
+    UOperator op;
+    Expression exp;
 };
 
-class Func : public Expression {
-    public:
-        Function func;
-        std::vector<Expression> args;
-        Func(Function ifunc, std::vector<Expression> iargs)
-            : func(ifunc)
-            , args(iargs)
-            {}
+struct Func : Expression {
+    Function func;
+    std::vector<Expression> args;
 };
 
-class Variable : public Expression {
-    public:
-        std::vector<char> name;
-        Variable(std::vector<char> iname)
-            : name(iname)
-            {}
+struct Variable : Expression {
+    std::vector<char> name;
 };
 
-class Matrix : public Expression {
+struct ValueExp : Expression {
+    Value value;
+};
+
+class Value {};
+
+class Matrix : public Value {
     public:
         std::valarray<Scalar> values;
         int row_size;
@@ -100,7 +73,7 @@ class Matrix : public Expression {
         }
 };
 
-class Scal : public Expression {
+class Scal : public Value {
     public:
         Scalar value;
         Scal(Scalar ivalue)
