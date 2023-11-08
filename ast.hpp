@@ -83,6 +83,21 @@ class Matrix : public Expression {
             , row_size(irow_size)
             , col_size(icol_size)
             {}
+        // Identity Matrix Initializer
+        Matrix(int dim)
+            : values(initIdentity(dim))
+            , row_size(dim)
+            , col_size(dim)
+            {}
+        std::valarray<Scalar> initIdentity(int dim)
+        {
+            std::valarray<Scalar> vals = std::valarray<Scalar>(Scalar(0), dim);
+            for (int i = 0; i < dim; i++)
+            {
+                vals[i*dim+i] = Scalar(1);
+            }
+            return vals;
+        }
 };
 
 class Scal : public Expression {
