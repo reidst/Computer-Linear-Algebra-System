@@ -46,3 +46,18 @@ Matrix operator-(const Matrix lhs, const Matrix rhs) {
 
     return Matrix(lhs.values - rhs.values, lhs.row_size, lhs.col_size);
 }
+
+Matrix augment(const Matrix lhs, const Matrix rhs) {
+    assert((lhs.col_size == rhs.col_size));
+
+    std::valarray<Scalar> vals = std::valarray<Scalar>(lhs.values.size() + rhs.values.size());
+    for (int i = 0; i < vals.size(); i++) {
+        if (i%lhs.col_size - lhs.row_size < 0) {
+            vals[i] = lhs.values[i%lhs.col_size+(i/(lhs.row_size+rhs.row_size))*lhs.row_size];
+        } else {
+            vals[i] = rhs.values[i%lhs.col_size+(i/(lhs.row_size+rhs.row_size))*rhs.row_size-lhs.row_size];
+        }
+    }
+
+    return Matrix(vals, lhs.row_size+rhs.row_size, lhs.col_size);
+}
