@@ -16,18 +16,6 @@ Matrix operator/(const Matrix lhs, const Scalar rhs) {
     return Matrix(lhs.values / rhs, lhs.row_size, lhs.col_size);
 }
 
-Matrix operator+(const Scalar lhs, const Matrix rhs) {
-    return Matrix(rhs.values + lhs, rhs.row_size, rhs.col_size);
-}
-
-Matrix operator+(const Matrix lhs, const Scalar rhs) {
-    return Matrix(lhs.values + rhs, lhs.row_size, lhs.col_size);
-}
-
-Matrix operator-(const Matrix lhs, const Scalar rhs) {
-    return Matrix(lhs.values - rhs, lhs.row_size, lhs.col_size);
-}
-
 // Matrix Arithmetic
 
 Matrix operator*(const Matrix lhs, const Matrix rhs) {
