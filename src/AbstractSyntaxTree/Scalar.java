@@ -37,6 +37,32 @@ public class Scalar implements Value{
         return new Scalar(other.frac.divide(frac));
     }
 
+    public Scalar reciprocal() {
+        return new Scalar(frac.reciprocal());
+    }
+
+    public Scalar negate() {
+        return new Scalar(frac.negate());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Scalar) {
+            return ((Scalar)other).frac.equals(frac);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return frac.hashCode();
+    }
+
+    public boolean equals(int other) {
+        // other == n/d; other*d == n
+        return (other * frac.getDenominator()) == frac.getNumerator();
+    }
+
     public Matrix multiply(Matrix other) {
         Matrix ret = new Matrix(other);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {

@@ -31,6 +31,29 @@ public class Matrix implements Value {
         }
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Matrix) {
+            return ((Matrix)other).values.equals(values);
+        }
+        return false;
+    }
+
+    public int rowSize() { return row_size; }
+    public int colSize() { return col_size; }
+
+    public Scalar get(int row, int col) {
+        assert(row >= 0 && row < col_size);
+        assert(col >= 0 && col < row_size);
+        return values.get(row * row_size + col);
+    }
+
+    public void set(int row, int col, Scalar value) {
+        assert(row >= 0 && row < col_size);
+        assert(col >= 0 && col < row_size);
+        values.set(row * row_size + col, value);
+    }
+
     public Matrix multiply(Scalar other) {
         Matrix ret = new Matrix(this);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
