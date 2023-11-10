@@ -117,4 +117,46 @@ public class Matrix implements Value {
         }
         return ret;
     }
+
+    public Matrix transpose() {
+        List<Scalar> transposedValues = new ArrayList<>(row_size * col_size);
+        for (int row = 0; row < col_size; row++) {
+            for (int col = 0; col < row_size; col++) {
+                transposedValues.add(get(col, row)); // NOTE: col and row are reversed
+            }
+        }
+        return new Matrix(transposedValues, col_size, row_size);
+    }
+
+    public boolean isUpperTriangular() {
+        assert(row_size == col_size);
+        for (int row = 1; row < col_size; row++) {
+            for (int col = 0; col < row; col++) {
+                if (!get(row, col).equals(0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isLowerTriangular() {
+        assert(row_size == col_size);
+        for (int col = 1; col < row_size; col++) {
+            for (int row = 0; row < col; row++) {
+                if (!get(row, col).equals(0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isTriangular() {
+        return isLowerTriangular() || isUpperTriangular();
+    }
+
+    public boolean isDiagonal() {
+        return isLowerTriangular() && isUpperTriangular();
+    }
 }
