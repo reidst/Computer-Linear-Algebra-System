@@ -2,7 +2,7 @@ package AbstractSyntaxTree;
 
 import org.apache.commons.math3.fraction.Fraction;
 
-public class Scalar implements Value{
+public final class Scalar implements Value{
     Fraction frac;
 
     public Scalar(int num) {
@@ -44,4 +44,11 @@ public class Scalar implements Value{
         }
         return ret;
     }
+
+    public String toString() {
+        return frac.toString();
+    }
+
+    @Override
+    public String print() { return frac.toString(); };
 }

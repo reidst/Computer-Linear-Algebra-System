@@ -2,8 +2,9 @@ package AbstractSyntaxTree;
 
 import java.util.*;
 import static java.util.Collections.copy;
+import static java.util.Collections.max;
 
-public class Matrix implements Value {
+public final class Matrix implements Value {
     List<Scalar> values;
     int row_size;
     int col_size;
@@ -14,8 +15,7 @@ public class Matrix implements Value {
         this.col_size = col_size;
     }
     public Matrix(Matrix other) {
-        this.values = new ArrayList<Scalar>();
-        copy(this.values, other.values);
+        this.values = new ArrayList<Scalar>(other.values);
         this.row_size = other.row_size;
         this.col_size = other.col_size;
     }
@@ -51,9 +51,14 @@ public class Matrix implements Value {
         assert(col_size == other.row_size);
 
         Matrix ret = new Matrix(new ArrayList<Scalar>(col_size*other.row_size), other.row_size, col_size);
-        for (int i = 0; i < col_size*other.row_size; i++) {
+
+        for (int i = 0; i < other.row_size*col_size; i++) {
+            ret.values.add(new Scalar(0));
             for (int j = 0; j < row_size; j++) {
-                ret.values.set(i, values.get((i/other.row_size)*row_size+j).add(other.values.get(i%other.row_size+j*other.row_size)));
+                Scalar current = ret.values.get(i);
+                Scalar a = values.get((i/other.row_size)*row_size+j);
+                Scalar b = other.values.get(i%other.row_size+j*other.row_size);
+                ret.values.set(i, current.add(a.multiply(b)));
             }
         }
         return ret;
@@ -93,5 +98,46 @@ public class Matrix implements Value {
             }
         }
         return ret;
+    }
+
+    @Override
+    public String toString() {
+        return values.toString();
+    }
+
+    private List<Integer> findMaxLengths() {
+        List<Integer> maxLengths = new ArrayList<>();
+        for (int c = 0; c < row_size; c++) {
+            int maxLength = 0;
+            for (int r = 0; r < col_size; r++) {
+                int len = values.get(c*r).toString().length();
+                if (len > maxLength) {
+                    maxLength = len;
+                }
+            }
+            maxLengths.add(maxLength);
+        }
+        return maxLengths;
+    }
+
+    @Override
+    public String print() {
+        List<Integer> maxLengths = findMaxLengths();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int r = 0; r < col_size; r++) {
+            if (r == 0) {
+                stringBuilder.append("[ ");
+            } else {
+                stringBuilder.append("| ");
+            }
+            for (int c = 0; c < row_size; c++) {
+                String currentValue = values.get(r*row_size + c).toString();
+                stringBuilder.append(currentValue);
+                stringBuilder.append(" ".repeat(Math.max(0, (maxLengths.get(c) - currentValue.length() + 1))));
+            }
+            stringBuilder.append("\n");
+        }
+        stringBuilder.append("]");
+        return stringBuilder.toString();
     }
 }
