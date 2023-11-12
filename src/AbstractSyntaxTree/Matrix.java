@@ -40,6 +40,24 @@ public class Matrix implements Value {
         return false;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[ ");
+        for (int row = 0; row < col_size; row++) {
+            for (int col = 0; col < row_size; col++) {
+                sb.append(get(row, col).toString());
+                sb.append(' ');
+            }
+            if (row + 1 < col_size) {
+                sb.append("|\n  ");
+            } else {
+                sb.append("]");
+            }
+        }
+        return sb.toString();
+    }
+
     public int rowSize() { return row_size; }
     public int colSize() { return col_size; }
 
