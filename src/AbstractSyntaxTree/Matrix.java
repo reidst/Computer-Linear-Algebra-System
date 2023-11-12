@@ -1,7 +1,6 @@
 package AbstractSyntaxTree;
 
 import java.util.*;
-import static java.util.Collections.copy;
 
 public class Matrix implements Value {
     List<Scalar> values;
@@ -14,8 +13,10 @@ public class Matrix implements Value {
         this.col_size = col_size;
     }
     public Matrix(Matrix other) {
-        this.values = new ArrayList<Scalar>();
-        copy(this.values, other.values);
+        this.values = new ArrayList<Scalar>(other.col_size * other.row_size);
+        for (int i = 0; i < other.row_size * other.col_size; i++) {
+            this.values.add(other.values.get(i));
+        }
         this.row_size = other.row_size;
         this.col_size = other.col_size;
     }
