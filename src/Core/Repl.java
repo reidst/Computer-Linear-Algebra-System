@@ -46,9 +46,11 @@ public class Repl {
             }
             while (endedEarly);
 
-            Value result = interpreter.interpret(ast);
+            if (ast != null) {
+                Value result = interpreter.interpret(ast);
 
-            System.out.println(result.print());
+                System.out.println(result.print());
+            }
         }
     }
 }
