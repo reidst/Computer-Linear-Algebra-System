@@ -34,11 +34,11 @@ public class Algorithms {
         }
         Matrix m = new Matrix(values, rowSize, colSize);
         System.out.println("Random matrix:");
-        System.out.println(m);
+        System.out.println(m.print());
         System.out.println("Echelon form:");
-        System.out.println(ef(m));
+        System.out.println(ef(m).print());
         System.out.println("Row-reduced echelon form:");
-        System.out.println(rref(m));
+        System.out.println(rref(m).print());
     }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {

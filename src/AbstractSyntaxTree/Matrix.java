@@ -42,24 +42,6 @@ public final class Matrix implements Value {
         return false;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ ");
-        for (int row = 0; row < col_size; row++) {
-            for (int col = 0; col < row_size; col++) {
-                sb.append(get(row, col).toString());
-                sb.append(' ');
-            }
-            if (row + 1 < col_size) {
-                sb.append("|\n  ");
-            } else {
-                sb.append("]");
-            }
-        }
-        return sb.toString();
-    }
-
     public int rowSize() { return row_size; }
     public int colSize() { return col_size; }
 
@@ -196,7 +178,7 @@ public final class Matrix implements Value {
         for (int c = 0; c < row_size; c++) {
             int maxLength = 0;
             for (int r = 0; r < col_size; r++) {
-                int len = values.get(c*r).toString().length();
+                int len = values.get(r*row_size + c).print().length();
                 if (len > maxLength) {
                     maxLength = len;
                 }
@@ -212,18 +194,21 @@ public final class Matrix implements Value {
         StringBuilder stringBuilder = new StringBuilder();
         for (int r = 0; r < col_size; r++) {
             if (r == 0) {
-                stringBuilder.append("[ ");
+                stringBuilder.append("[  ");
             } else {
-                stringBuilder.append("| ");
+                stringBuilder.append("|  ");
             }
             for (int c = 0; c < row_size; c++) {
-                String currentValue = values.get(r*row_size + c).toString();
+                String currentValue = values.get(r*row_size + c).print();
                 stringBuilder.append(currentValue);
-                stringBuilder.append(" ".repeat(Math.max(0, (maxLengths.get(c) - currentValue.length() + 1))));
+                stringBuilder.append(" ".repeat(Math.max(0, (maxLengths.get(c) - currentValue.length() + 2))));
             }
-            stringBuilder.append("\n");
+            if (r == col_size - 1){
+                stringBuilder.append("]");
+            } else {
+                stringBuilder.append("\n");
+            }
         }
-        stringBuilder.append("]");
         return stringBuilder.toString();
     }
 }
