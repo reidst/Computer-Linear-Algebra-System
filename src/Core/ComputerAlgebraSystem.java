@@ -1,6 +1,4 @@
-package App;
-
-import App.Repl;
+package Core;
 
 public class ComputerAlgebraSystem {
     public static void main(String[] args) {

@@ -1,7 +1,6 @@
 package AbstractSyntaxTree;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class FunctionExpression implements Expression {
     FunctionName func;

@@ -1,7 +1,7 @@
 package AbstractSyntaxTree;
 
 import java.util.*;
-import static java.util.Collections.copy;
+
 import static java.util.Collections.max;
 
 public final class Matrix implements Value {

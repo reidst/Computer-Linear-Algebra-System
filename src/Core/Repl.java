@@ -1,4 +1,4 @@
-package App;
+package Core;
 
 import AbstractSyntaxTree.*;
 import Interpreter.LinearInterpreter;
