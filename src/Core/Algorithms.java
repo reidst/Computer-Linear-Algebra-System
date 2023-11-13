@@ -14,9 +14,23 @@ public class Algorithms {
         final int colSize = in.nextInt();
         final int rowSize = in.nextInt();
         in.nextLine();
+        System.out.print("Generate a random matrix? (Y/n): ");
+        final String randomChoice = in.nextLine();
+        final boolean useRandomMatrix = !(randomChoice.equalsIgnoreCase("n"));
         List<Scalar> values = new ArrayList<>();
-        for (int i = 0; i < colSize * rowSize; i++) {
-            values.add(new Scalar((int)(Math.random() * 10)));
+        if (useRandomMatrix) {
+            for (int i = 0; i < colSize * rowSize; i++) {
+                values.add(new Scalar((int)(Math.random() * 10)));
+            }
+        } else {
+            for (int row = 0; row < colSize; row++) {
+                for (int col = 0; col < rowSize; col++) {
+                    System.out.printf("A[%d, %d]: ", row, col);
+                    final int valueChoice = in.nextInt();
+                    in.nextLine();
+                    values.add(new Scalar(valueChoice));
+                }
+            }
         }
         Matrix m = new Matrix(values, rowSize, colSize);
         System.out.println("Random matrix:");
