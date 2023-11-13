@@ -1,6 +1,6 @@
 package AbstractSyntaxTree;
 
-public class Variable {
+public final class Variable implements Expression {
     String name;
 
     public Variable(String name) {
@@ -10,4 +10,6 @@ public class Variable {
     public String getName() {
         return name;
     }
+
+    public String toString() { return String.format("Variable(%s)", name); }
 }

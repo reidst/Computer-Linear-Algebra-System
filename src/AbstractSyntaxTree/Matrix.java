@@ -2,7 +2,9 @@ package AbstractSyntaxTree;
 
 import java.util.*;
 
-public class Matrix implements Value {
+import static java.util.Collections.max;
+
+public final class Matrix implements Value {
     List<Scalar> values;
     int row_size;
     int col_size;
@@ -40,24 +42,6 @@ public class Matrix implements Value {
         return false;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ ");
-        for (int row = 0; row < col_size; row++) {
-            for (int col = 0; col < row_size; col++) {
-                sb.append(get(row, col).toString());
-                sb.append(' ');
-            }
-            if (row + 1 < col_size) {
-                sb.append("|\n  ");
-            } else {
-                sb.append("]");
-            }
-        }
-        return sb.toString();
-    }
-
     public int rowSize() { return row_size; }
     public int colSize() { return col_size; }
 
@@ -93,9 +77,14 @@ public class Matrix implements Value {
         assert(col_size == other.row_size);
 
         Matrix ret = new Matrix(new ArrayList<Scalar>(col_size*other.row_size), other.row_size, col_size);
-        for (int i = 0; i < col_size*other.row_size; i++) {
+
+        for (int i = 0; i < other.row_size*col_size; i++) {
+            ret.values.add(new Scalar(0));
             for (int j = 0; j < row_size; j++) {
-                ret.values.set(i, values.get((i/other.row_size)*row_size+j).add(other.values.get(i%other.row_size+j*other.row_size)));
+                Scalar current = ret.values.get(i);
+                Scalar a = values.get((i/other.row_size)*row_size+j);
+                Scalar b = other.values.get(i%other.row_size+j*other.row_size);
+                ret.values.set(i, current.add(a.multiply(b)));
             }
         }
         return ret;
@@ -177,5 +166,49 @@ public class Matrix implements Value {
 
     public boolean isDiagonal() {
         return isLowerTriangular() && isUpperTriangular();
+    }
+
+    @Override
+    public String toString() {
+        return values.toString();
+    }
+
+    private List<Integer> findMaxLengths() {
+        List<Integer> maxLengths = new ArrayList<>();
+        for (int c = 0; c < row_size; c++) {
+            int maxLength = 0;
+            for (int r = 0; r < col_size; r++) {
+                int len = values.get(r*row_size + c).print().length();
+                if (len > maxLength) {
+                    maxLength = len;
+                }
+            }
+            maxLengths.add(maxLength);
+        }
+        return maxLengths;
+    }
+
+    @Override
+    public String print() {
+        List<Integer> maxLengths = findMaxLengths();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int r = 0; r < col_size; r++) {
+            if (r == 0) {
+                stringBuilder.append("[  ");
+            } else {
+                stringBuilder.append("|  ");
+            }
+            for (int c = 0; c < row_size; c++) {
+                String currentValue = values.get(r*row_size + c).print();
+                stringBuilder.append(currentValue);
+                stringBuilder.append(" ".repeat(Math.max(0, (maxLengths.get(c) - currentValue.length() + 2))));
+            }
+            if (r == col_size - 1){
+                stringBuilder.append("]");
+            } else {
+                stringBuilder.append("\n");
+            }
+        }
+        return stringBuilder.toString();
     }
 }

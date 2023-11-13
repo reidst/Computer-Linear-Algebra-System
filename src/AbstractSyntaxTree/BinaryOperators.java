@@ -1,6 +1,6 @@
 package AbstractSyntaxTree;
 
-public enum BinaryOperator {
+public enum BinaryOperators {
     ADD,
     SUB,
     MUL,

@@ -1,3 +1,3 @@
 package AbstractSyntaxTree;
 
-public interface Expression { }
+public sealed interface Expression permits Assignment, BinaryOperation, FunctionExpression, UnaryOperation, ValueExpression, Variable { }

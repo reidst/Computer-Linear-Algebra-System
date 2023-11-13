@@ -2,7 +2,7 @@ package AbstractSyntaxTree;
 
 import org.apache.commons.math3.fraction.Fraction;
 
-public class Scalar implements Value{
+public final class Scalar implements Value{
     Fraction frac;
 
     public Scalar(int num) {
@@ -63,11 +63,6 @@ public class Scalar implements Value{
         return (other * frac.getDenominator()) == frac.getNumerator();
     }
 
-    @Override
-    public String toString() {
-        return String.format("%d/%d", frac.getNumerator(), frac.getDenominator());
-    }
-
     public Matrix multiply(Matrix other) {
         Matrix ret = new Matrix(other);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
@@ -75,4 +70,24 @@ public class Scalar implements Value{
         }
         return ret;
     }
+
+    @Override
+    public String toString() {
+        return frac.toString();
+    }
+
+    @Override
+    public String print() {
+        String str = null;
+        int denominator = frac.getDenominator();
+        int numerator = frac.getNumerator();
+        if (denominator == 1) {
+            str = Integer.toString(numerator);
+        } else if (numerator == 0) {
+            str = "0";
+        } else {
+            str = numerator + "/" + denominator;
+        }
+
+        return str;};
 }

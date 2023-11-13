@@ -1,17 +1,17 @@
 package AbstractSyntaxTree;
 
-public class BinaryOperation {
-    BinaryOperator op;
+public final class BinaryOperation implements Expression {
+    BinaryOperators op;
     Expression left;
     Expression right;
 
-    public BinaryOperation(BinaryOperator op, Expression left, Expression right) {
+    public BinaryOperation(BinaryOperators op, Expression left, Expression right) {
         this.op = op;
         this.left = left;
         this.right = right;
     }
 
-    public BinaryOperator getOp() {
+    public BinaryOperators getOp() {
         return op;
     }
 
@@ -21,5 +21,10 @@ public class BinaryOperation {
 
     public Expression getRight() {
         return right;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("BinaryOperation(%s, %s, %s)", op.toString(), left.toString(), right.toString());
     }
 }
