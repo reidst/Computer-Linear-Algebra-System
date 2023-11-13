@@ -105,7 +105,7 @@ public class Algorithms {
                     pivotColAtRow[row] = pivotPos(ret, row);
                 }
                 for (int row = 0; row < m.colSize(); row++) {
-                    for (int swapRow = row + 1; swapRow < m.colSize(); swapRow++) {
+                    for (int swapRow = row; swapRow > 0; swapRow--) {
                         if (pivotColAtRow[swapRow - 1] > pivotColAtRow[swapRow]) {
                             ret = rowSwap(ret, swapRow - 1, swapRow);
                             int temp = pivotColAtRow[swapRow - 1];
