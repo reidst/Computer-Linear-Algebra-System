@@ -8,30 +8,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class LinearParser {
     private static final Parser<?> integerTokenizer = Terminals.IntegerLiteral.TOKENIZER;
     private static final Parser<?> doubleTokenizer = Terminals.DecimalLiteral.TOKENIZER;
 
-    private static final Terminals functions = Terminals.operators(Arrays.stream(FunctionName.values()).map(FunctionName::toString).toList());
-    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|", "<-");
+    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","RREF","EF");
 
     private static final Parser<?> identifiers = Terminals.Identifier.TOKENIZER;
 
     private static final Parser<Void> ignored = Scanners.WHITESPACES.skipMany();
 
-    public static final Parser<?> tokenizer = Parsers.or(doubleTokenizer, integerTokenizer, terminals.tokenizer(), functions.tokenizer(), identifiers);
+    public static final Parser<?> tokenizer = Parsers.or(doubleTokenizer, integerTokenizer, terminals.tokenizer(), identifiers);
 
     private static Parser<ExpressionBlock> statementBlockParser(){
-        return Parsers.or(assignmentParser(), operatorExpressionParser()).sepBy(terminals.token(";")).map(ExpressionBlock::new);
+        return Parsers.or(assignmentParser(), expressionParser()).sepBy(terminals.token(";")).map(ExpressionBlock::new);
     }
 
     private static Parser<Assignment> assignmentParser() {
         return Parsers.sequence(
                 variableParser(),
                 terminals.token("<-"),
-                operatorExpressionParser(),
+                expressionParser(),
                 (variable, unused, expression) -> new Assignment(variable, expression)
         );
     }
@@ -39,34 +39,56 @@ public class LinearParser {
     // Expressions
 
     private static Parser<Expression> expressionParser() {
-        return Parsers.or(
+        Parser.Reference<Expression> ref = Parser.newReference();
+        Parser<Expression> atom = Parsers.or(
                 valueExpressionParser(),
-                variableParser()
-//                functionParser()
+                variableParser(),
+                functionParser(ref.lazy())
         );
+        Parser<Expression> operatorTable = new OperatorTable<Expression>()
+                .prefix(op("-", NEG), 100)
+                .infixl(op("*", MUL), 20)
+                .infixl(op("/", DIV), 20)
+                .infixl(op("+", ADD), 10)
+                .infixl(op("-", SUB), 10)
+                .build(atom);
+        ref.set(operatorTable);
+        return operatorTable;
     }
 
     private static Parser<Variable> variableParser() {
         return Terminals.Identifier.PARSER.map(Variable::new);
     }
 
-    private static Parser<FunctionExpression> functionParser() {
+    static Parser<Expression> functionParser(Parser<Expression> arg) {
         return Parsers.or(
-                rrefParser()
-                //determinantParser(),
-                //inverseParser()
+                rrefParser(arg),
+                efParser(arg)
         );
     }
 
-    private static Parser<FunctionExpression> rrefParser() {
-        Parser.Reference<Expression> ref = Parser.newReference();
-        Parser<FunctionExpression> func = Parsers.sequence(
-                functions.token("RREF"),
-                ref.lazy().between(terminals.token("("), terminals.token(")")),
-                (s, expression) -> new FunctionExpression(FunctionName.valueOf(s.toString()), new ArrayList<Expression>(Collections.singleton(expression))));
-        ref.set(operatorExpressionParser());
-        return func;
+    static Parser<FunctionExpression> rrefParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("RREF"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.RREF, args));
+    }
 
+    static Parser<FunctionExpression> efParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("EF"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.RREF, args));
+    }
+
+    static Parser<List<Expression>> argumentList(Parser<Expression> arg) {
+        return parens(arg.sepBy(terminals.token(",")));
+    }
+
+    static <T> Parser<T> parens(Parser<T> arg) {
+        return arg.between(terminals.token("("), terminals.token(")"));
     }
 
     private static Parser<ValueExpression> valueExpressionParser() {
@@ -117,20 +139,6 @@ public class LinearParser {
     private static final BinaryOperator<Expression> MUL = (e1, e2) -> new BinaryOperation(BinaryOperators.MUL, e1, e2);
 
     private static final BinaryOperator<Expression> DIV = (e1, e2) -> new BinaryOperation(BinaryOperators.DIV, e1, e2);
-
-    private static Parser<Expression> operatorExpressionParser() {
-        Parser.Reference<Expression> ref = Parser.newReference();
-        Parser<Expression> atom = ref.lazy().between(terminals.token("("), terminals.token(")")).or(expressionParser());
-        Parser<Expression> operatorTable = new OperatorTable<Expression>()
-                .prefix(op("-", NEG), 100)
-                .infixl(op("*", MUL), 20)
-                .infixl(op("/", DIV), 20)
-                .infixl(op("+", ADD), 10)
-                .infixl(op("-", SUB), 10)
-                .build(atom);
-        ref.set(operatorTable);
-        return operatorTable;
-    }
     
     private static <T> Parser<T> op(String token, T value) {
         return terminals.token(token).retn(value);

@@ -1,12 +1,13 @@
 package Interpreter;
 
 import AbstractSyntaxTree.*;
+import Core.Algorithms;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class LinearInterpreter {
-    private Map<String, Value> variableMap;
+    private final Map<String, Value> variableMap;
     public LinearInterpreter() {
         variableMap = new HashMap<String, Value>();
     }
@@ -29,7 +30,7 @@ public class LinearInterpreter {
             case UnaryOperation u     -> interpretUnaryOperation(u);
             case BinaryOperation b    -> interpretBinaryOperation(b);
             case Variable v           -> interpretVariable(v);
-            case FunctionExpression f -> throw new UnsupportedOperationException();
+            case FunctionExpression f -> interpretFunction(f);
             case Assignment a         -> interpretAssignment(a);
         };
     }
@@ -86,5 +87,13 @@ public class LinearInterpreter {
         Value value = interpretExpression(assignment.getExp());
         variableMap.put(assignment.getVar().getName(), value);
         return value;
+    }
+
+    private Value interpretFunction(FunctionExpression functionExpression) {
+        return switch (functionExpression.getFunc()) {
+            case FunctionName.RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst()));
+            case FunctionName.EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst()));
+            default -> throw new UnsupportedOperationException("That function does not exist");
+        };
     }
 }
