@@ -2,6 +2,7 @@ package Core;
 
 import AbstractSyntaxTree.Matrix;
 import AbstractSyntaxTree.Scalar;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 
@@ -36,9 +37,12 @@ public class Algorithms {
         System.out.println("Random matrix:");
         System.out.println(m.print());
         System.out.println("Echelon form:");
-        System.out.println(ef(m).print());
+        Pair<Matrix, Scalar> efResult = ef(m);
+        System.out.println(efResult.getFirst().print());
         System.out.println("Row-reduced echelon form:");
         System.out.println(rref(m).print());
+        System.out.println("Determinant:");
+        System.out.println(efResult.getSecond().print());
     }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {
@@ -72,8 +76,9 @@ public class Algorithms {
         return ret;
     }
 
-    public static Matrix ef(Matrix m) {
+    public static Pair<Matrix, Scalar> ef(Matrix m) {
         Matrix ret = new Matrix(m);
+        Scalar determinant = new Scalar(1);
         do {
             // check if all rows have unique pivot columns
             Map<Integer, Integer> pivotRowMap = new HashMap<>();
@@ -108,20 +113,29 @@ public class Algorithms {
                     for (int swapRow = row; swapRow > 0; swapRow--) {
                         if (pivotColAtRow[swapRow - 1] > pivotColAtRow[swapRow]) {
                             ret = rowSwap(ret, swapRow - 1, swapRow);
+                            determinant = determinant.negate();
                             int temp = pivotColAtRow[swapRow - 1];
                             pivotColAtRow[swapRow - 1] = pivotColAtRow[swapRow];
                             pivotColAtRow[swapRow] = temp;
                         }
                     }
                 }
-                return ret;
+                if (m.colSize() == m.rowSize()) {
+                    Scalar diag = new Scalar(1);
+                    for (int i = 0; i < m.colSize(); i++) {
+                        diag = diag.multiply(ret.get(i, i));
+                    }
+                    return new Pair<>(ret, determinant.multiply(diag));
+                }
+                return new Pair<>(ret, null);
             }
         } while (true);
     }
 
     public static Matrix rref(Matrix m) {
         // convert to echelon form first
-        Matrix ret = ef(m);
+        Pair<Matrix, Scalar> pair = ef(m);
+        Matrix ret = pair.getFirst();
         for (int row = 0; row < m.colSize(); row++) {
             // find the pivot column
             int pivotCol = 0;
