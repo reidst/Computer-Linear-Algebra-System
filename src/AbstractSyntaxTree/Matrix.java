@@ -52,6 +52,24 @@ public sealed class Matrix implements Value permits ColumnVector, RowVector {
         return col_size == 1;
     }
 
+    public ColumnVector getColumnVector(int col) {
+        assert(0 <= col && col < row_size);
+        List<Scalar> newValues = new ArrayList<>();
+        for (int row = 0; row < col_size; row++) {
+            newValues.add(get(row, col));
+        }
+        return new ColumnVector(newValues);
+    }
+
+    public RowVector getRowVector(int row) {
+        assert(0 <= row && row < col_size);
+        List<Scalar> newValues = new ArrayList<>();
+        for (int col = 0; col < row_size; row++) {
+            newValues.add(get(row, col));
+        }
+        return new RowVector(newValues);
+    }
+
     public Vector asVector() {
         if (isColumnVector()) {
             return new ColumnVector(this.values);
