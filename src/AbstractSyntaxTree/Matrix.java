@@ -4,8 +4,8 @@ import java.util.*;
 
 import static java.util.Collections.max;
 
-public final class Matrix implements Value {
-    List<Scalar> values;
+public sealed class Matrix implements Value permits ColumnVector, RowVector {
+    final List<Scalar> values;
     int row_size;
     int col_size;
 
@@ -44,6 +44,25 @@ public final class Matrix implements Value {
 
     public int rowSize() { return row_size; }
     public int colSize() { return col_size; }
+
+    public boolean isColumnVector() {
+        return row_size == 1;
+    }
+    public boolean isRowVector() {
+        return col_size == 1;
+    }
+
+    public Vector asVector() {
+        if (isColumnVector()) {
+            return new ColumnVector(this.values);
+        }
+        else if (isRowVector()) {
+            return new RowVector(this.values);
+        }
+        else {
+            throw new ClassCastException("The given matrix is not a vector.");
+        }
+    }
 
     public Scalar get(int row, int col) {
         assert(row >= 0 && row < col_size);
