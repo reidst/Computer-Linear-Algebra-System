@@ -1,7 +1,5 @@
 package AbstractSyntaxTree;
 
-import Core.Algorithms;
-
 import java.util.List;
 
 public final class VectorSet {

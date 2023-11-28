@@ -1,6 +1,7 @@
 package Core;
 
 import AbstractSyntaxTree.*;
+import AbstractSyntaxTree.Vector;
 
 import java.util.*;
 
@@ -155,6 +156,31 @@ public class Algorithms {
         return zeroCount;
     }
 
+    public static int rank(Matrix m) {
+        final Matrix efMat = ef(m);
+        int row;
+        for (row = 0; row < m.colSize(); row++) {
+            if (pivotPos(efMat, row) == m.rowSize()) {
+                break;
+            }
+        }
+        return row;
+    }
+
+    public static int nullity(Matrix m) {
+        return m.rowSize() - rank(m);
+    }
+
+    public static boolean isConsistent(Matrix m) {
+        final Matrix efMat = ef(m);
+        for (int row = 0; row < m.colSize(); row++) {
+            if (pivotPos(efMat, row) == m.rowSize() - 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static VectorSet columnSpace(Matrix m) {
         final Matrix efMat = ef(m);
         List<ColumnVector> includedColumns = new ArrayList<>();
@@ -179,5 +205,38 @@ public class Algorithms {
             includedRows.add(m.getRowVector(row));
         }
         return new VectorSet(includedRows);
+    }
+
+    public boolean isLinearlyIndependent(VectorSet vs) {
+        if (vs.size() > vs.getDimension()) {
+            return false; // more vectors than dimensions
+        }
+        RowVector r = Algorithms.ef(new Matrix(vs)).getRowVector(vs.getDimension() - 1);
+        return !r.isZeroVector();
+    }
+
+    public static VectorSet spanningSubset(VectorSet vs) {
+        return columnSpace(new Matrix(vs));
+    }
+
+    public static boolean withinSpan(VectorSet vs, Vector u) {
+        if (vs.getVector(0).getClass() != u.getClass()) {
+            throw new IllegalArgumentException("Vector and vector space must be both row or both column vectors.");
+        }
+        if (vs.getDimension() != u.getDimension()) {
+            throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
+        }
+        Matrix mat = new Matrix(vs);
+        mat = switch (u) {
+            case ColumnVector cv -> mat.augment(cv);
+            case RowVector rv -> mat.transpose().augment(rv.transpose()).transpose();
+        };
+        final Matrix efMat = ef(mat);
+        return isConsistent(efMat);
+    }
+
+    public static boolean isBasis(VectorSet vs) {
+        final VectorSet span = spanningSubset(vs);
+        return span.size() == span.getDimension();
     }
 }
