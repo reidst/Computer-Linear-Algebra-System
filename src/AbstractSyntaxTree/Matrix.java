@@ -34,6 +34,31 @@ public sealed class Matrix implements Value permits ColumnVector, RowVector {
         }
     }
 
+    public Matrix(VectorSet vs) {
+        switch (vs.getVector(0)) {
+            case ColumnVector ignored -> {
+                this.row_size = vs.size();
+                this.col_size = vs.getDimension();
+                this.values = new ArrayList<Scalar>(row_size * col_size);
+                for (int row = 0; row < col_size; row++) {
+                    for (int col = 0; col < row_size; col++) {
+                        this.values.add(vs.getVector(col).get(row));
+                    }
+                }
+            }
+            case RowVector ignored -> {
+                this.row_size = vs.getDimension();
+                this.col_size = vs.size();
+                this.values = new ArrayList<Scalar>(row_size * col_size);
+                for (int row = 0; row < col_size; row++) {
+                    for (int col = 0; col < row_size; col++) {
+                        this.values.add(vs.getVector(row).get(col));
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Matrix) {

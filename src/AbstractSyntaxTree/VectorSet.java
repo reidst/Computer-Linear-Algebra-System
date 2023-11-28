@@ -4,7 +4,7 @@ import Core.Algorithms;
 
 import java.util.List;
 
-public class VectorSet {
+public final class VectorSet {
 
     private final List<? extends Vector> vectors;
     private final int dimension;
@@ -20,26 +20,20 @@ public class VectorSet {
         }
     }
 
-    public Matrix asColumnSpaceMatrix() {
-        Matrix m = null;
-        for (Vector v : vectors) {
-            Matrix vectorMat = switch (v) {
-                case ColumnVector cv -> (Matrix)cv;
-                case RowVector rv -> ((Matrix)rv).transpose();
-            };
-            m = (m == null
-                ? vectorMat
-                : m.augment(vectorMat)
-            );
-        }
-        return m;
+    public int getDimension() {
+        return dimension;
     }
 
-    public boolean isLinearlyIndependent() {
-        if (vectors.size() > dimension) {
-            return false; // more vectors than dimensions
+    public int size() {
+        return vectors.size();
+    }
+
+    public Vector getVector(int i) {
+        if (i < 0 || i >= size()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Cannot access vector %d in a VectorSet of %d vectors", i, size())
+            );
         }
-        RowVector r = Algorithms.ef(asColumnSpaceMatrix()).getRowVector(dimension - 1);
-        return !r.isZeroVector();
+        return vectors.get(i);
     }
 }
