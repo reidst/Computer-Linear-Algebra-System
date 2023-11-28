@@ -1,7 +1,6 @@
 package Core;
 
-import AbstractSyntaxTree.Matrix;
-import AbstractSyntaxTree.Scalar;
+import AbstractSyntaxTree.*;
 
 import java.util.*;
 
@@ -154,5 +153,31 @@ public class Algorithms {
             }
         }
         return zeroCount;
+    }
+
+    public static VectorSet columnSpace(Matrix m) {
+        final Matrix efMat = ef(m);
+        List<ColumnVector> includedColumns = new ArrayList<>();
+        for (int row = 0; row < m.colSize(); row++) {
+            int pivotCol = pivotPos(efMat, row);
+            if (pivotCol == m.rowSize()) {
+                break;
+            }
+            includedColumns.add(m.getColumnVector(pivotCol));
+        }
+        return new VectorSet(includedColumns);
+    }
+
+    public static VectorSet rowSpace(Matrix m) {
+        final Matrix efMat = ef(m);
+        List<RowVector> includedRows = new ArrayList<>();
+        for (int row = 0; row < m.colSize(); row++) {
+            int pivotCol = pivotPos(efMat, row);
+            if (pivotCol == m.rowSize()) {
+                break;
+            }
+            includedRows.add(m.getRowVector(row));
+        }
+        return new VectorSet(includedRows);
     }
 }

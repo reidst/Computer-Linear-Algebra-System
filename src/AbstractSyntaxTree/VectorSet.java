@@ -2,23 +2,21 @@ package AbstractSyntaxTree;
 
 import Core.Algorithms;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class VectorSet {
 
-    private final List<Vector> vectors;
+    private final List<? extends Vector> vectors;
     private final int dimension;
 
-    public VectorSet(Vector... vs) {
-        this.vectors = Arrays.stream(vs).toList();
-        if (!vectors.isEmpty()) {
-            dimension = vectors.getFirst().getDimension();
-            if (vectors.stream().map(Vector::getDimension).anyMatch(i -> i != dimension)) {
-                throw new IllegalArgumentException("All vectors in a set must be of equal dimensionality.");
-            }
-        } else {
+    public VectorSet(List<? extends Vector> vs) {
+        this.vectors = vs;
+        if (vectors.isEmpty()) {
             throw new IllegalArgumentException("Vector sets cannot be empty.");
+        }
+        dimension = vectors.getFirst().getDimension();
+        if (vectors.stream().map(Vector::getDimension).anyMatch(i -> i != dimension)) {
+            throw new IllegalArgumentException("All vectors in a set must be of equal dimensionality.");
         }
     }
 
@@ -38,9 +36,6 @@ public class VectorSet {
     }
 
     public boolean isLinearlyIndependent() {
-        if (vectors.isEmpty()) {
-            return false; // a zero-dimensional space is linearly dependent
-        }
         if (vectors.size() > dimension) {
             return false; // more vectors than dimensions
         }
