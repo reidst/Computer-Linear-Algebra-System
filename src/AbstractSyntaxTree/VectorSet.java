@@ -4,10 +4,10 @@ import java.util.List;
 
 public final class VectorSet {
 
-    private final List<? extends Vector> vectors;
+    private final List<Vector> vectors;
     private final int dimension;
 
-    public VectorSet(List<? extends Vector> vs) {
+    public VectorSet(List<Vector> vs) {
         this.vectors = vs;
         if (vectors.isEmpty()) {
             throw new IllegalArgumentException("Vector sets cannot be empty.");

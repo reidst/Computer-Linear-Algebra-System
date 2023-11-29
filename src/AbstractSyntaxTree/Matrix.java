@@ -4,7 +4,7 @@ import java.util.*;
 
 import static java.util.Collections.max;
 
-public sealed class Matrix implements Value permits ColumnVector, RowVector {
+public sealed class Matrix implements Value permits Vector {
     final List<Scalar> values;
     int row_size;
     int col_size;
@@ -35,26 +35,12 @@ public sealed class Matrix implements Value permits ColumnVector, RowVector {
     }
 
     public Matrix(VectorSet vs) {
-        switch (vs.getVector(0)) {
-            case ColumnVector ignored -> {
-                this.row_size = vs.size();
-                this.col_size = vs.getDimension();
-                this.values = new ArrayList<Scalar>(row_size * col_size);
-                for (int row = 0; row < col_size; row++) {
-                    for (int col = 0; col < row_size; col++) {
-                        this.values.add(vs.getVector(col).get(row));
-                    }
-                }
-            }
-            case RowVector ignored -> {
-                this.row_size = vs.getDimension();
-                this.col_size = vs.size();
-                this.values = new ArrayList<Scalar>(row_size * col_size);
-                for (int row = 0; row < col_size; row++) {
-                    for (int col = 0; col < row_size; col++) {
-                        this.values.add(vs.getVector(row).get(col));
-                    }
-                }
+        this.row_size = vs.size();
+        this.col_size = vs.getDimension();
+        this.values = new ArrayList<Scalar>(row_size * col_size);
+        for (int row = 0; row < col_size; row++) {
+            for (int col = 0; col < row_size; col++) {
+                this.values.add(vs.getVector(col).get(row));
             }
         }
     }
@@ -77,30 +63,27 @@ public sealed class Matrix implements Value permits ColumnVector, RowVector {
         return col_size == 1;
     }
 
-    public ColumnVector getColumnVector(int col) {
+    public Vector getColumnVector(int col) {
         assert(0 <= col && col < row_size);
         List<Scalar> newValues = new ArrayList<>();
         for (int row = 0; row < col_size; row++) {
             newValues.add(get(row, col));
         }
-        return new ColumnVector(newValues);
+        return new Vector(newValues);
     }
 
-    public RowVector getRowVector(int row) {
+    public Vector getRowVector(int row) {
         assert(0 <= row && row < col_size);
         List<Scalar> newValues = new ArrayList<>();
         for (int col = 0; col < row_size; row++) {
             newValues.add(get(row, col));
         }
-        return new RowVector(newValues);
+        return new Vector(newValues);
     }
 
     public Vector asVector() {
-        if (isColumnVector()) {
-            return new ColumnVector(this.values);
-        }
-        else if (isRowVector()) {
-            return new RowVector(this.values);
+        if (isColumnVector() || isRowVector()) {
+            return new Vector(this.values);
         }
         else {
             throw new ClassCastException("The given matrix is not a vector.");
