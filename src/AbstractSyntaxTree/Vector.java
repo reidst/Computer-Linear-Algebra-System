@@ -2,7 +2,7 @@ package AbstractSyntaxTree;
 
 import java.util.List;
 
-public final class Vector extends Matrix {
+public final class Vector extends Matrix implements Value {
 
     public Vector(List<Scalar> values) {
         super(values, 1, values.size());

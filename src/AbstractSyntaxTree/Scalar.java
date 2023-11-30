@@ -26,7 +26,7 @@ public final class Scalar implements Value{
     }
 
     public Scalar subtract(Scalar other) {
-        return new Scalar(other.frac.subtract(frac));
+        return new Scalar(frac.subtract(other.frac));
     }
 
     public Scalar multiply(Scalar other) {
@@ -34,7 +34,7 @@ public final class Scalar implements Value{
     }
 
     public Scalar divide(Scalar other) {
-        return new Scalar(other.frac.divide(frac));
+        return new Scalar(frac.divide(other.frac));
     }
 
     public Scalar reciprocal() {

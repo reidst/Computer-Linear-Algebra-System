@@ -56,9 +56,9 @@ public final class VectorList implements Value {
         StringBuilder sb = new StringBuilder();
         for (int v = 0; v < size(); v++) {
             if (v == 0) {
-                sb.append("{  ");
+                sb.append("{<  ");
             } else {
-                sb.append("   ");
+                sb.append(" <  ");
             }
             for (int d = 0; d < getVectorDimension(); d++) {
                 String currentValue = vectors.get(v).get(d).print();
@@ -66,9 +66,9 @@ public final class VectorList implements Value {
                 sb.append(" ".repeat(Math.max(0, (maxLengths.get(d) - currentValue.length() + 2))));
             }
             if (v == size() - 1) {
-                sb.append('}');
+                sb.append(">}");
             } else {
-                sb.append(",\n");
+                sb.append(">,\n");
             }
         }
         return sb.toString();

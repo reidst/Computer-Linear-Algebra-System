@@ -15,7 +15,8 @@ public class LinearParser {
     private static final Parser<?> integerTokenizer = Terminals.IntegerLiteral.TOKENIZER;
     private static final Parser<?> doubleTokenizer = Terminals.DecimalLiteral.TOKENIZER;
 
-    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","RREF","EF");
+    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
+            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY","IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS");
 
     private static final Parser<?> identifiers = Terminals.Identifier.TOKENIZER;
 
@@ -63,7 +64,20 @@ public class LinearParser {
     static Parser<Expression> functionParser(Parser<Expression> arg) {
         return Parsers.or(
                 rrefParser(arg),
-                efParser(arg)
+                efParser(arg),
+                inverseParser(arg),
+                spanParser(arg),
+                detParser(arg),
+                projParser(arg),
+                dimParser(arg),
+                rankParser(arg),
+                nullityParser(arg),
+                isConsParser(arg),
+                colParser(arg),
+                rowfParser(arg),
+                nulParser(arg),
+                spansParser(arg),
+                isBasisParser(arg)
         );
     }
 
@@ -80,7 +94,111 @@ public class LinearParser {
                 terminals.token("EF"),
                 argumentList(arg),
                 (unused, args) ->
-                        new FunctionExpression(FunctionName.RREF, args));
+                        new FunctionExpression(FunctionName.EF, args));
+    }
+
+    static Parser<FunctionExpression> inverseParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("INVERSE"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.INVERSE, args));
+    }
+
+    static Parser<FunctionExpression> spanParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("SPAN"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.SPAN, args));
+    }
+
+    static Parser<FunctionExpression> detParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("DETERMINANT"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.DETERMINANT, args));
+    }
+
+    static Parser<FunctionExpression> projParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("PROJECT"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.PROJECT, args));
+    }
+
+    static Parser<FunctionExpression> dimParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("DIM"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.DIM, args));
+    }
+
+    static Parser<FunctionExpression> rankParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("RANK"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.RANK, args));
+    }
+
+    static Parser<FunctionExpression> nullityParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("NULLITY"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.NULLITY, args));
+    }
+
+    static Parser<FunctionExpression> isConsParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IS_CONSISTENT"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IS_CONSISTENT, args));
+    }
+
+    static Parser<FunctionExpression> colParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("COL"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.COL, args));
+    }
+
+    static Parser<FunctionExpression> rowfParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("ROW"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.ROW, args));
+    }
+
+    static Parser<FunctionExpression> nulParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("NUL"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.NUL, args));
+    }
+
+    static Parser<FunctionExpression> spansParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("SPANS"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.SPANS, args));
+    }
+
+    static Parser<FunctionExpression> isBasisParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IS_BASIS"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IS_BASIS, args));
     }
 
     static Parser<List<Expression>> argumentList(Parser<Expression> arg) {
@@ -94,8 +212,26 @@ public class LinearParser {
     private static Parser<ValueExpression> valueExpressionParser() {
         return Parsers.or(
                 scalarParser(),
-                matrixParser()
+                vectorParser(),
+                matrixParser(),
+                vectorListParser()
         ).map(ValueExpression::new);
+    }
+
+    private static Parser<Vector> vectorParser() {
+        return Parsers.between(
+                terminals.token("<"),
+                rowParser(),
+                terminals.token(">")
+        ).map(Vector::new);
+    }
+
+    private static Parser<VectorList> vectorListParser() {
+        return Parsers.between(
+                terminals.token("{"),
+                vectorParser().sepBy1(terminals.token(",")),
+                terminals.token("}")
+        ).map(VectorList::new);
     }
 
     private static Parser<Matrix> matrixParser() {
@@ -110,7 +246,7 @@ public class LinearParser {
     }
 
     private static Parser<List<Scalar>> rowParser() {
-        return scalarParser().many1();
+        return Parsers.or(scalarParser(), Parsers.sequence(terminals.token("-"), scalarParser().map(Scalar::negate))).many1();
     }
 
     private static Parser<Scalar> scalarParser() {
