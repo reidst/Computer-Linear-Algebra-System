@@ -2,10 +2,8 @@ package AbstractSyntaxTree;
 
 import java.util.*;
 
-import static java.util.Collections.max;
-
-public final class Matrix implements Value {
-    List<Scalar> values;
+public sealed class Matrix implements Value permits Vector {
+    final List<Scalar> values;
     int row_size;
     int col_size;
 
@@ -34,6 +32,17 @@ public final class Matrix implements Value {
         }
     }
 
+    public Matrix(VectorList vs) {
+        this.row_size = vs.size();
+        this.col_size = vs.getVectorDimension();
+        this.values = new ArrayList<Scalar>(row_size * col_size);
+        for (int row = 0; row < col_size; row++) {
+            for (int col = 0; col < row_size; col++) {
+                this.values.add(vs.getVector(col).get(row));
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Matrix) {
@@ -44,6 +53,40 @@ public final class Matrix implements Value {
 
     public int rowSize() { return row_size; }
     public int colSize() { return col_size; }
+
+    public boolean isColumnVector() {
+        return row_size == 1;
+    }
+    public boolean isRowVector() {
+        return col_size == 1;
+    }
+
+    public Vector getColumnVector(int col) {
+        assert(0 <= col && col < row_size);
+        List<Scalar> newValues = new ArrayList<>();
+        for (int row = 0; row < col_size; row++) {
+            newValues.add(get(row, col));
+        }
+        return new Vector(newValues);
+    }
+
+    public Vector getRowVector(int row) {
+        assert(0 <= row && row < col_size);
+        List<Scalar> newValues = new ArrayList<>();
+        for (int col = 0; col < row_size; row++) {
+            newValues.add(get(row, col));
+        }
+        return new Vector(newValues);
+    }
+
+    public Vector asVector() {
+        if (isColumnVector() || isRowVector()) {
+            return new Vector(this.values);
+        }
+        else {
+            throw new ClassCastException("The given matrix is not a vector.");
+        }
+    }
 
     public Scalar get(int row, int col) {
         assert(row >= 0 && row < col_size);

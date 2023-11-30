@@ -1,7 +1,7 @@
 package Core;
 
-import AbstractSyntaxTree.Matrix;
-import AbstractSyntaxTree.Scalar;
+import AbstractSyntaxTree.*;
+import AbstractSyntaxTree.Vector;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
@@ -168,5 +168,95 @@ public class Algorithms {
             }
         }
         return zeroCount;
+    }
+
+    public static int rank(Matrix m) {
+        final Matrix efMat = ef(m).getFirst();
+        int row;
+        for (row = 0; row < m.colSize(); row++) {
+            if (pivotPos(efMat, row) == m.rowSize()) {
+                break;
+            }
+        }
+        return row;
+    }
+
+    public static int nullity(Matrix m) {
+        return m.rowSize() - rank(m);
+    }
+
+    public static boolean isConsistent(Matrix m) {
+        final Matrix efMat = ef(m).getFirst();
+        for (int row = 0; row < m.colSize(); row++) {
+            if (pivotPos(efMat, row) == m.rowSize() - 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static VectorList columnSpace(Matrix m) {
+        final Matrix efMat = ef(m).getFirst();
+        List<Vector> includedColumns = new ArrayList<>();
+        for (int row = 0; row < m.colSize(); row++) {
+            int pivotCol = pivotPos(efMat, row);
+            if (pivotCol == m.rowSize()) {
+                break;
+            }
+            includedColumns.add(m.getColumnVector(pivotCol));
+        }
+        return new VectorList(includedColumns);
+    }
+
+    public static VectorList rowSpace(Matrix m) {
+        final Matrix efMat = ef(m).getFirst();
+        List<Vector> includedRows = new ArrayList<>();
+        for (int row = 0; row < m.colSize(); row++) {
+            int pivotCol = pivotPos(efMat, row);
+            if (pivotCol == m.rowSize()) {
+                break;
+            }
+            includedRows.add(m.getRowVector(row));
+        }
+        return new VectorList(includedRows);
+    }
+
+    public static VectorList nullSpace(Matrix m) {
+        // todo finish
+        throw new RuntimeException("Kernel computation is not yet implemented.");
+    }
+
+    public static boolean isLinearlyIndependent(VectorList vs) {
+        if (vs.size() > vs.getVectorDimension()) {
+            return false; // more vectors than dimensions
+        }
+        Vector r = Algorithms.ef(new Matrix(vs)).getFirst().getRowVector(vs.getVectorDimension() - 1);
+        return !r.isZeroVector();
+    }
+
+    public static VectorList independentSubset(VectorList vs) {
+        return columnSpace(new Matrix(vs));
+    }
+
+    public static boolean withinSpan(VectorList vs, Vector u) {
+        if (vs.getVectorDimension() != u.getDimension()) {
+            throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
+        }
+        Matrix mat = new Matrix(vs);
+        mat = mat.augment(u);
+        final Matrix efMat = ef(mat).getFirst();
+        return isConsistent(efMat);
+    }
+
+    public static boolean spans(VectorList a, VectorList b) {
+        if (a.getVectorDimension() != b.getVectorDimension()) {
+            throw new IllegalArgumentException("Vector spaces must have same dimension to test span.");
+        }
+        VectorList spanToMeet = independentSubset(b);
+        return independentSubset(a).size() == spanToMeet.size();
+    }
+
+    public static boolean isBasis(VectorList vs) {
+        return vs.size() == vs.getVectorDimension() && isLinearlyIndependent(vs);
     }
 }
