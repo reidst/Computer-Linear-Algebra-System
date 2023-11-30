@@ -42,7 +42,7 @@ public class Algorithms {
         System.out.println("Row-reduced echelon form:");
         System.out.println(rref(m).print());
         System.out.println("Determinant:");
-        System.out.println(efResult.getSecond().print());
+        System.out.println(efResult.getSecond() == null ? "N/A" : efResult.getSecond().print());
     }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {
