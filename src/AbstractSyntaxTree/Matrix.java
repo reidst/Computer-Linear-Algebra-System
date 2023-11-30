@@ -2,8 +2,6 @@ package AbstractSyntaxTree;
 
 import java.util.*;
 
-import static java.util.Collections.max;
-
 public sealed class Matrix implements Value permits Vector {
     final List<Scalar> values;
     int row_size;
@@ -34,9 +32,9 @@ public sealed class Matrix implements Value permits Vector {
         }
     }
 
-    public Matrix(VectorSet vs) {
+    public Matrix(VectorList vs) {
         this.row_size = vs.size();
-        this.col_size = vs.getDimension();
+        this.col_size = vs.getVectorDimension();
         this.values = new ArrayList<Scalar>(row_size * col_size);
         for (int row = 0; row < col_size; row++) {
             for (int col = 0; col < row_size; col++) {

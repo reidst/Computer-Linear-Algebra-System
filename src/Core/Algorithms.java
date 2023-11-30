@@ -181,7 +181,7 @@ public class Algorithms {
         return true;
     }
 
-    public static VectorSet columnSpace(Matrix m) {
+    public static VectorList columnSpace(Matrix m) {
         final Matrix efMat = ef(m);
         List<Vector> includedColumns = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
@@ -191,10 +191,10 @@ public class Algorithms {
             }
             includedColumns.add(m.getColumnVector(pivotCol));
         }
-        return new VectorSet(includedColumns);
+        return new VectorList(includedColumns);
     }
 
-    public static VectorSet rowSpace(Matrix m) {
+    public static VectorList rowSpace(Matrix m) {
         final Matrix efMat = ef(m);
         List<Vector> includedRows = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
@@ -204,28 +204,28 @@ public class Algorithms {
             }
             includedRows.add(m.getRowVector(row));
         }
-        return new VectorSet(includedRows);
+        return new VectorList(includedRows);
     }
 
-    public static VectorSet nullSpace(Matrix m) {
+    public static VectorList nullSpace(Matrix m) {
         // todo finish
         throw new RuntimeException("Kernel computation is not yet implemented.");
     }
 
-    public static boolean isLinearlyIndependent(VectorSet vs) {
-        if (vs.size() > vs.getDimension()) {
+    public static boolean isLinearlyIndependent(VectorList vs) {
+        if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).getRowVector(vs.getDimension() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).getRowVector(vs.getVectorDimension() - 1);
         return !r.isZeroVector();
     }
 
-    public static VectorSet independentSubset(VectorSet vs) {
+    public static VectorList independentSubset(VectorList vs) {
         return columnSpace(new Matrix(vs));
     }
 
-    public static boolean withinSpan(VectorSet vs, Vector u) {
-        if (vs.getDimension() != u.getDimension()) {
+    public static boolean withinSpan(VectorList vs, Vector u) {
+        if (vs.getVectorDimension() != u.getDimension()) {
             throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
         }
         Matrix mat = new Matrix(vs);
@@ -234,15 +234,15 @@ public class Algorithms {
         return isConsistent(efMat);
     }
 
-    public static boolean spans(VectorSet a, VectorSet b) {
-        if (a.getDimension() != b.getDimension()) {
+    public static boolean spans(VectorList a, VectorList b) {
+        if (a.getVectorDimension() != b.getVectorDimension()) {
             throw new IllegalArgumentException("Vector spaces must have same dimension to test span.");
         }
-        VectorSet spanToMeet = independentSubset(b);
+        VectorList spanToMeet = independentSubset(b);
         return independentSubset(a).size() == spanToMeet.size();
     }
 
-    public static boolean isBasis(VectorSet vs) {
-        return vs.size() == vs.getDimension() && isLinearlyIndependent(vs);
+    public static boolean isBasis(VectorList vs) {
+        return vs.size() == vs.getVectorDimension() && isLinearlyIndependent(vs);
     }
 }

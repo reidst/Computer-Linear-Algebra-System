@@ -46,4 +46,42 @@ public final class Vector extends Matrix {
         final Scalar s = this.dot(other).divide(this.dot(this));
         return this.multiply(s);
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (!(other instanceof Vector)) {
+            return false;
+        }
+        final Vector v = (Vector)other;
+        if (getDimension() != v.getDimension()) {
+            return false;
+        }
+        for (int i = 0; i < getDimension(); i++) {
+            if (!get(i).equals(v.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return values.hashCode();
+    }
+
+    @Override
+    public String print() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('<');
+        sb.append(' ');
+        for (Scalar s : values) {
+            sb.append(s.print());
+            sb.append(' ');
+        }
+        sb.append('>');
+        return sb.toString();
+    }
 }
