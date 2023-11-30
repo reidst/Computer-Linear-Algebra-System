@@ -1,5 +1,7 @@
 package AbstractSyntaxTree;
 
+import org.apache.commons.math3.util.Pair;
+
 import java.util.*;
 
 public sealed class Matrix implements Value permits Vector {
@@ -155,9 +157,10 @@ public sealed class Matrix implements Value permits Vector {
         return ret;
     }
 
-    public Matrix augment(Matrix other) {
-        assert(col_size == other.col_size);
-
+    public Matrix augmentColumns(Matrix other) {
+        if (col_size != other.col_size) {
+            throw new IllegalArgumentException("Cannot column-augment matrices with different column sizes.");
+        }
         Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
         for (int i = 0; i < ret.row_size*ret.col_size; i++) {
             if (i%col_size - row_size < 0) {
@@ -167,6 +170,72 @@ public sealed class Matrix implements Value permits Vector {
             }
         }
         return ret;
+    }
+
+    public Matrix augmentRows(Matrix other) {
+        if (row_size != other.row_size) {
+            throw new IllegalArgumentException("Cannot row-augment matrices with different row sizes.");
+        }
+        List<Scalar> newValues = new ArrayList<>(values.size() + other.values.size());
+        newValues.addAll(values);
+        newValues.addAll(other.values);
+        return new Matrix(newValues, row_size, col_size + other.col_size);
+    }
+
+    public Pair<Matrix, Matrix> partitionColumns(int col) {
+        if (col < 0 || col > row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Cannot partition at column %d on matrix with %d columns.", col, row_size)
+            );
+        }
+        if (col == 0) {
+            return new Pair<>(null, new Matrix(this));
+        }
+        if (col == row_size) {
+            return new Pair<>(new Matrix(this), null);
+        }
+        List<Scalar> leftValues = new ArrayList<>(col * col_size);
+        List<Scalar> rightValues = new ArrayList<>((row_size - col) * col_size);
+        for (int r = 0; r < col_size; r++) {
+            for (int c = 0; c < row_size; c++) {
+                if (c < col) {
+                    leftValues.add(get(r, c));
+                } else {
+                    rightValues.add(get(r, c));
+                }
+            }
+        }
+        return new Pair<>(
+                new Matrix(leftValues, col, col_size),
+                new Matrix(rightValues, (row_size - col), col_size)
+        );
+    }
+
+    public Pair<Matrix, Matrix> partitionRows(int row) {
+        if (row < 0 || row > col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Cannot partition at row %d on matrix with %d rows.", row, col_size)
+            );
+        }
+        if (row == 0) {
+            return new Pair<>(null, new Matrix(this));
+        }
+        if (row == col_size) {
+            return new Pair<>(new Matrix(this), null);
+        }
+        List<Scalar> leftValues = new ArrayList<>(row * row_size);
+        List<Scalar> rightValues = new ArrayList<>((col_size - row) * row_size);
+        for (int i = 0; i < col_size * row_size; i++) {
+            if (i < row * row_size) {
+                leftValues.add(values.get(i));
+            } else {
+                rightValues.add(values.get(i));
+            }
+        }
+        return new Pair<>(
+                new Matrix(leftValues, row_size, row),
+                new Matrix(rightValues, row_size, (col_size - row))
+        );
     }
 
     public Matrix transpose() {
