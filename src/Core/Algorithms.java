@@ -1,6 +1,7 @@
 package Core;
 
 import AbstractSyntaxTree.*;
+import AbstractSyntaxTree.Vector;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
@@ -170,7 +171,7 @@ public class Algorithms {
     }
 
     public static int rank(Matrix m) {
-        final Matrix efMat = ef(m);
+        final Matrix efMat = ef(m).getFirst();
         int row;
         for (row = 0; row < m.colSize(); row++) {
             if (pivotPos(efMat, row) == m.rowSize()) {
@@ -185,7 +186,7 @@ public class Algorithms {
     }
 
     public static boolean isConsistent(Matrix m) {
-        final Matrix efMat = ef(m);
+        final Matrix efMat = ef(m).getFirst();
         for (int row = 0; row < m.colSize(); row++) {
             if (pivotPos(efMat, row) == m.rowSize() - 1) {
                 return false;
@@ -195,7 +196,7 @@ public class Algorithms {
     }
 
     public static VectorList columnSpace(Matrix m) {
-        final Matrix efMat = ef(m);
+        final Matrix efMat = ef(m).getFirst();
         List<Vector> includedColumns = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
             int pivotCol = pivotPos(efMat, row);
@@ -208,7 +209,7 @@ public class Algorithms {
     }
 
     public static VectorList rowSpace(Matrix m) {
-        final Matrix efMat = ef(m);
+        final Matrix efMat = ef(m).getFirst();
         List<Vector> includedRows = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
             int pivotCol = pivotPos(efMat, row);
@@ -229,7 +230,7 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).getRowVector(vs.getVectorDimension() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).getFirst().getRowVector(vs.getVectorDimension() - 1);
         return !r.isZeroVector();
     }
 
@@ -243,7 +244,7 @@ public class Algorithms {
         }
         Matrix mat = new Matrix(vs);
         mat = mat.augment(u);
-        final Matrix efMat = ef(mat);
+        final Matrix efMat = ef(mat).getFirst();
         return isConsistent(efMat);
     }
 
