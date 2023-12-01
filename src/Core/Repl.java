@@ -39,7 +39,7 @@ public class Repl {
                         System.out.print(".. ");
                         input = input + cin.nextLine();
                     } else {
-                        throw e;
+                        System.out.println(e.toString());
                     }
                 }
 
@@ -47,9 +47,12 @@ public class Repl {
             while (endedEarly);
 
             if (ast != null) {
-                Value result = interpreter.interpret(ast);
-
-                System.out.println(result.print());
+                try {
+                    Value result = interpreter.interpret(ast);
+                    System.out.println(result.print());
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                }
             }
         }
     }
