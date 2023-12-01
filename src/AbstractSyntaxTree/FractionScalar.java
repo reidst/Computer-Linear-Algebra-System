@@ -96,12 +96,26 @@ public final class FractionScalar implements Scalar {
     }
 
     @Override
+    public boolean equals(Object other, double epsilon) {
+        if (other instanceof FractionScalar) {
+            return ((FractionScalar)other).frac.equals(frac);
+        }
+        return false;
+    }
+
+    @Override
     public int hashCode() {
         return frac.hashCode();
     }
 
     @Override
     public boolean equals(int other) {
+        // other == n/d; other*d == n
+        return (other * frac.getDenominator()) == frac.getNumerator();
+    }
+
+    @Override
+    public boolean equals(int other, double epsilon) {
         // other == n/d; other*d == n
         return (other * frac.getDenominator()) == frac.getNumerator();
     }

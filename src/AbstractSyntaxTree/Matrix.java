@@ -216,15 +216,15 @@ Matrix implements Value permits Vector {
                     other.col_size
             ));
         }
-        Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
-        for (int i = 0; i < ret.row_size*ret.col_size; i++) {
-            if (i%col_size - row_size < 0) {
-                ret.values.set(i, values.get(i % col_size + (i / (row_size + other.row_size)) * row_size));
-           } else {
-                ret.values.set(i, other.values.get(i % col_size + (i / (row_size + other.row_size)) * other.row_size - row_size));
+        List<Scalar> r = new ArrayList<>();
+        for (int i = 0; i < ((row_size+other.row_size)*col_size); i++) {
+            if (i%(row_size + other.row_size) < row_size) {
+                r.add(values.get((i % (row_size + other.row_size)) + (row_size * i / (row_size + other.row_size))));
+            } else {
+                r.add(other.values.get((i % (row_size + other.row_size) - row_size) + (other.row_size * (i / (row_size + other.row_size)))));
             }
         }
-        return ret;
+        return new Matrix(r, row_size+other.row_size, col_size);
     }
 
     public Matrix augmentRows(Matrix other) {
@@ -310,6 +310,20 @@ Matrix implements Value permits Vector {
         for (int row = 1; row < col_size; row++) {
             for (int col = 0; col < row; col++) {
                 if (!get(row, col).equals(0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isUpperTriangular(double epsilon) {
+        if (row_size != col_size) {
+            return false;
+        }
+        for (int row = 1; row < col_size; row++) {
+            for (int col = 0; col < row; col++) {
+                if (!get(row, col).equals(0, epsilon)) {
                     return false;
                 }
             }

@@ -328,9 +328,9 @@ public class Algorithms {
                 uk.add(U.getVector(j));
             }
             Vector v = W.getVector(k);
-            Matrix Ukx = (new VectorList(uk)).toMatrix().augment(v);
+            Matrix Ukx = (new VectorList(uk)).toMatrix().augmentColumns(v);
             Matrix rkm = rref(Ukx);
-            Vector rk = rkm.partition(k+1).getSecond().asVector();
+            Vector rk = rkm.partitionColumns(k+1).getSecond().asVector();
             r.add(rk);
         }
         Matrix Q = U.toMatrix();
@@ -340,11 +340,12 @@ public class Algorithms {
 
     public static Matrix QRAlgorithm(Matrix A) {
         Matrix Ak = A.toDoubleMatrix();
-        for (int k = 0; k < 3; k++) {
-            System.out.println(Ak.print());
+        while (!Ak.isUpperTriangular(Math.pow(10, -6))) {
+            System.out.println(Ak.print() + "\n");
             Pair<Matrix, Matrix> QR = QRFactorize(Ak);
             Matrix Q = QR.getFirst();
             Matrix R = QR.getSecond();
+            System.out.println(Q.multiply(R).print() + "\n");
             Ak = R.multiply(Q);
         }
         Ak = Ak.toFractionMatrix();

@@ -21,10 +21,14 @@ public sealed interface Scalar extends Value permits DoubleScalar, FractionScala
     @Override
     public boolean equals(Object other);
 
+    boolean equals(Object other, double epsilon);
+
     @Override
     public int hashCode();
 
     public boolean equals(int other);
+
+    boolean equals(int other, double epsilon);
 
     public Matrix multiply(Matrix other);
 

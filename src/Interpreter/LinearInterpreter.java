@@ -139,7 +139,7 @@ public class LinearInterpreter {
             case SPANS -> new Boolean(Algorithms.spans((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (VectorList) interpretExpression(functionExpression.getArgs().getLast())));
             case IS_BASIS -> new Boolean(Algorithms.isBasis((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
             case QR -> Algorithms.QRAlgorithm((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-            case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augment((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
+            case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augmentColumns((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
         };
     }
 }

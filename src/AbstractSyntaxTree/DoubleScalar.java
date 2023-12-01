@@ -6,6 +6,8 @@ public final class DoubleScalar implements Scalar {
 
     public double value;
 
+    private final double epsilon = Math.pow(10, -9);
+
     public DoubleScalar(int num) {
         this.value = num;
     }
@@ -83,7 +85,15 @@ public final class DoubleScalar implements Scalar {
     @Override
     public boolean equals(Object other) {
         if (other instanceof DoubleScalar) {
-            return ((DoubleScalar)other).value == value;
+            return ((DoubleScalar)other).value < (value + epsilon) && ((DoubleScalar)other).value > (value - epsilon);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object other, double epsilon) {
+        if (other instanceof DoubleScalar) {
+            return ((DoubleScalar)other).value < (value + epsilon) && ((DoubleScalar)other).value > (value - epsilon);
         }
         return false;
     }
@@ -95,7 +105,12 @@ public final class DoubleScalar implements Scalar {
 
     @Override
     public boolean equals(int other) {
-        return value == other;
+        return ((other < (value + epsilon) && other > (value - epsilon)));
+    }
+
+    @Override
+    public boolean equals(int other, double epsilon) {
+        return ((other < (value + epsilon) && other > (value - epsilon)));
     }
 
     @Override
