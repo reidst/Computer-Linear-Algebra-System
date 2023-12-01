@@ -3,6 +3,7 @@ package Core;
 import AbstractSyntaxTree.*;
 import AbstractSyntaxTree.Vector;
 import Utilities.*;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 
@@ -261,11 +262,28 @@ public class Algorithms {
     }
 
     public static VectorList nullSpace(Matrix m) {
-        // todo finish
-        throw new RuntimeException("Kernel computation is not yet implemented.");
+        Matrix aug = m.transpose();
+        List<RowOperation> ops = ef(aug).rowOperations();
+        aug = aug.augmentColumns(new Matrix(m.rowSize()));
+        for (RowOperation op : ops) {
+            aug = op.apply(aug);
+        }
+        Pair<Matrix, Matrix> part = aug.partitionColumns(m.colSize());
+        List<Vector> nullBasis = new ArrayList<>();
+        for (int row = aug.colSize() - 1; row >= 0; row--) {
+            if (part.getFirst().getRowVector(row).isZeroVector()) {
+                nullBasis.add(part.getSecond().getRowVector(row));
+            } else {
+                break;
+            }
+        }
+        return new VectorList(nullBasis);
     }
 
     public static boolean isLinearlyIndependent(VectorList vs) {
+        if (vs.size() == 0) {
+            return false;
+        }
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
@@ -273,12 +291,17 @@ public class Algorithms {
         return !r.isZeroVector();
     }
 
-    // todo should this be renamed to `span`?
     public static VectorList independentSubset(VectorList vs) {
+        if (vs.size() == 0) {
+            return new VectorList(Collections.emptyList());
+        }
         return columnSpace(new Matrix(vs));
     }
 
     public static boolean withinSpan(VectorList vs, Vector u) {
+        if (vs.size() == 0) {
+            return false;
+        }
         if (vs.getVectorDimension() != u.getDimension()) {
             throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
         }
@@ -289,6 +312,12 @@ public class Algorithms {
     }
 
     public static boolean spans(VectorList a, VectorList b) {
+        if (a.size() == 0) {
+            return false;
+        }
+        if (b.size() == 0) {
+            return true;
+        }
         if (a.getVectorDimension() != b.getVectorDimension()) {
             throw new IllegalArgumentException("Vector spaces must have same dimension to test span.");
         }
@@ -297,6 +326,9 @@ public class Algorithms {
     }
 
     public static boolean isBasis(VectorList vs) {
+        if (vs.size() == 0) {
+            return false;
+        }
         return vs.size() == vs.getVectorDimension() && isLinearlyIndependent(vs);
     }
 }
