@@ -31,7 +31,9 @@ public final class Vector extends Matrix {
     }
 
     public Scalar dot(Vector other) {
-        assert(getDimension() == other.getDimension());
+        if (getDimension() != other.getDimension()) {
+            throw new IllegalArgumentException("Vectors must have the same dimension to perform dot product.");
+        }
         Scalar sum = new Scalar(0);
         for (int i = 0; i < getDimension(); i++) {
             sum = sum.add(get(i).multiply(other.get(i)));

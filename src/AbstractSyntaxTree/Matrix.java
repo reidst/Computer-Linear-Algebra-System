@@ -64,7 +64,11 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Vector getColumnVector(int col) {
-        assert(0 <= col && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
         List<Scalar> newValues = new ArrayList<>();
         for (int row = 0; row < col_size; row++) {
             newValues.add(get(row, col));
@@ -73,7 +77,11 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Vector getRowVector(int row) {
-        assert(0 <= row && row < col_size);
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         List<Scalar> newValues = new ArrayList<>();
         for (int col = 0; col < row_size; row++) {
             newValues.add(get(row, col));
@@ -91,14 +99,30 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Scalar get(int row, int col) {
-        assert(row >= 0 && row < col_size);
-        assert(col >= 0 && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         return values.get(row * row_size + col);
     }
 
     public void set(int row, int col, Scalar value) {
-        assert(row >= 0 && row < col_size);
-        assert(col >= 0 && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         values.set(row * row_size + col, value);
     }
 
@@ -119,7 +143,13 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Matrix multiply(Matrix other) {
-        assert(col_size == other.row_size);
+        if (col_size != other.row_size) {
+            throw new IllegalArgumentException(String.format(
+                    "Matrix with column size %d cannot be multiplied by matrix with row size %d.",
+                    col_size,
+                    other.row_size
+            ));
+        }
 
         Matrix ret = new Matrix(new ArrayList<Scalar>(col_size*other.row_size), other.row_size, col_size);
 
@@ -136,8 +166,9 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Matrix add(Matrix other) {
-        assert(col_size == other.col_size);
-        assert(row_size == other.row_size);
+        if (col_size != other.col_size || row_size != other.row_size) {
+            throw new IllegalArgumentException("Matrices must have same dimensions in order to add them.");
+        }
 
         Matrix ret = new Matrix(this);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
@@ -147,8 +178,9 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public Matrix subtract(Matrix other) {
-        assert(col_size == other.col_size);
-        assert(row_size == other.row_size);
+        if (col_size != other.col_size || row_size != other.row_size) {
+            throw new IllegalArgumentException("Matrices must have same dimensions in order to subtract them.");
+        }
 
         Matrix ret = new Matrix(this);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
@@ -159,7 +191,11 @@ public sealed class Matrix implements Value permits Vector {
 
     public Matrix augmentColumns(Matrix other) {
         if (col_size != other.col_size) {
-            throw new IllegalArgumentException("Cannot column-augment matrices with different column sizes.");
+            throw new IllegalArgumentException(String.format(
+                    "Cannot column-augment matrix with %d rows with matrix with %d rows.",
+                    col_size,
+                    other.col_size
+            ));
         }
         Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
         for (int i = 0; i < ret.row_size*ret.col_size; i++) {
@@ -249,7 +285,9 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public boolean isUpperTriangular() {
-        assert(row_size == col_size);
+        if (row_size != col_size) {
+            return false;
+        }
         for (int row = 1; row < col_size; row++) {
             for (int col = 0; col < row; col++) {
                 if (!get(row, col).equals(0)) {
@@ -261,7 +299,9 @@ public sealed class Matrix implements Value permits Vector {
     }
 
     public boolean isLowerTriangular() {
-        assert(row_size == col_size);
+        if (row_size != col_size) {
+            return false;
+        }
         for (int col = 1; col < row_size; col++) {
             for (int row = 0; row < col; row++) {
                 if (!get(row, col).equals(0)) {
