@@ -5,16 +5,17 @@ import java.util.*;
 public final class VectorList implements Value {
 
     private final List<Vector> vectors;
-    private final int dimension;
+    private final int vectorDimension;
 
     public VectorList(List<Vector> vs) {
-        if (vs.isEmpty()) {
-            throw new IllegalArgumentException("Vector sets cannot be empty.");
-        }
         vectors = vs;
-        dimension = vs.getFirst().getDimension();
-        if (vs.stream().map(Vector::getDimension).anyMatch(i -> i != dimension)) {
-            throw new IllegalArgumentException("All vectors in a set must be of equal dimensionality.");
+        if (!vs.isEmpty()) {
+            vectorDimension = vs.getFirst().getDimension();
+            if (vs.stream().map(Vector::getDimension).anyMatch(i -> i != vectorDimension)) {
+                throw new IllegalArgumentException("All vectors in a set must be of equal dimensionality.");
+            }
+        } else {
+            vectorDimension = 0;
         }
     }
 
@@ -27,7 +28,7 @@ public final class VectorList implements Value {
     }
 
     public int getVectorDimension() {
-        return dimension;
+        return vectorDimension;
     }
 
     public int size() {
@@ -70,6 +71,9 @@ public final class VectorList implements Value {
 
     @Override
     public String print() {
+        if (size() == 0) {
+            return "{ }";
+        }
         List<Integer> maxLengths = findMaxLengths();
         StringBuilder sb = new StringBuilder();
         for (int v = 0; v < size(); v++) {
