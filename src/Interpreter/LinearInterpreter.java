@@ -147,6 +147,10 @@ public class LinearInterpreter {
             case EIGENSPACE -> Algorithms.eigenspace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()), (Scalar) interpretExpression(functionExpression.getArgs().getLast()));
             case IS_EIGENVALUE -> new Boolean(Algorithms.isEigenValue((Scalar) interpretExpression(functionExpression.getArgs().getFirst()), (Matrix) interpretExpression(functionExpression.getArgs().getLast())));
             case IS_EIGENVECTOR -> new Boolean(Algorithms.isEigenVector((Vector) interpretExpression(functionExpression.getArgs().getFirst()), (Matrix) interpretExpression(functionExpression.getArgs().getLast())));
+            case TRANSPOSE -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).transpose();
+            case ORTHO_BASIS -> Algorithms.gramSchmidt((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
+            case IN_SPAN -> new Boolean(Algorithms.withinSpan((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (Vector) interpretExpression(functionExpression.getArgs().getLast())));
+            case IS_INDEPENDENT -> new Boolean(Algorithms.isLinearlyIndependent((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
         };
     }
 }
