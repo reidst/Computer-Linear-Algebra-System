@@ -2,7 +2,7 @@ package Core;
 
 import AbstractSyntaxTree.*;
 import AbstractSyntaxTree.Vector;
-import org.apache.commons.math3.util.Pair;
+import Utilities.*;
 
 import java.util.*;
 
@@ -37,12 +37,16 @@ public class Algorithms {
         System.out.println("Random matrix:");
         System.out.println(m.print());
         System.out.println("Echelon form:");
-        Pair<Matrix, Scalar> efResult = ef(m);
-        System.out.println(efResult.getFirst().print());
+        RowReductionResult efResult = ef(m);
+        System.out.println(efResult.result().print());
         System.out.println("Row-reduced echelon form:");
-        System.out.println(rref(m).print());
+        System.out.println(rref(m).result().print());
         System.out.println("Determinant:");
-        System.out.println(efResult.getSecond().print());
+        System.out.println(efResult.determinant() == null ? "N/A" : efResult.determinant().print());
+        System.out.printf("Column space (rank = %d):\n", rank(m));
+        System.out.println(columnSpace(m).print());
+        System.out.printf("Null space (nullity = %d):\n", nullity(m));
+        System.out.println(nullSpace(m).print());
     }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {
@@ -76,9 +80,10 @@ public class Algorithms {
         return ret;
     }
 
-    public static Pair<Matrix, Scalar> ef(Matrix m) {
+    public static RowReductionResult ef(Matrix m) {
         Matrix ret = new Matrix(m);
         Scalar determinant = new Scalar(1);
+        List<RowOperation> rowOperations = new ArrayList<>();
         do {
             // check if all rows have unique pivot columns
             Map<Integer, Integer> pivotRowMap = new HashMap<>();
@@ -102,7 +107,9 @@ public class Algorithms {
                 Scalar scale = ret.get(rowReplaceSource, rowReplaceColumn)
                         .divide(ret.get(rowReplaceTarget, rowReplaceColumn))
                         .negate();
-                ret = rowReplace(ret, rowReplaceTarget, rowReplaceSource, scale);
+                RowOperation rowOp = new RowReplace(rowReplaceTarget, rowReplaceSource, scale);
+                rowOperations.add(rowOp);
+                ret = rowOp.apply(ret);
             } else {
                 // do the sorting; todo do better than n^2
                 int[] pivotColAtRow = new int[m.colSize()];
@@ -112,7 +119,9 @@ public class Algorithms {
                 for (int row = 0; row < m.colSize(); row++) {
                     for (int swapRow = row; swapRow > 0; swapRow--) {
                         if (pivotColAtRow[swapRow - 1] > pivotColAtRow[swapRow]) {
-                            ret = rowSwap(ret, swapRow - 1, swapRow);
+                            RowOperation rowOp = new RowSwap(swapRow - 1, swapRow);
+                            rowOperations.add(rowOp);
+                            ret = rowOp.apply(ret);
                             determinant = determinant.negate();
                             int temp = pivotColAtRow[swapRow - 1];
                             pivotColAtRow[swapRow - 1] = pivotColAtRow[swapRow];
@@ -125,17 +134,17 @@ public class Algorithms {
                     for (int i = 0; i < m.colSize(); i++) {
                         diag = diag.multiply(ret.get(i, i));
                     }
-                    return new Pair<>(ret, determinant.multiply(diag));
+                    return new RowReductionResult(ret, determinant.multiply(diag), rowOperations);
                 }
-                return new Pair<>(ret, null);
+                return new RowReductionResult(ret, null, rowOperations);
             }
         } while (true);
     }
 
-    public static Matrix rref(Matrix m) {
+    public static RowReductionResult rref(Matrix m) {
         // convert to echelon form first
-        Pair<Matrix, Scalar> pair = ef(m);
-        Matrix ret = pair.getFirst();
+        RowReductionResult efResult = ef(m);
+        Matrix ret = efResult.result();
         for (int row = 0; row < m.colSize(); row++) {
             // find the pivot column
             int pivotCol = 0;
@@ -147,14 +156,18 @@ public class Algorithms {
             }
             // normalize each row
             Scalar normalizingScalar = ret.get(row, pivotCol).reciprocal();
-            ret = rowScale(ret, row, normalizingScalar);
+            RowOperation rowOp = new RowScale(row, normalizingScalar);
+            efResult.rowOperations().add(rowOp);
+            ret = rowOp.apply(ret);
             // zero-out the column above the pivot
             for (int targetRow = row - 1; targetRow >= 0; targetRow--) {
                 Scalar targetScalar = ret.get(targetRow, pivotCol).negate();
-                ret = rowReplace(ret, targetRow, row, targetScalar);
+                rowOp = new RowReplace(targetRow, row, targetScalar);
+                efResult.rowOperations().add(rowOp);
+                ret = rowOp.apply(ret);
             }
         }
-        return ret;
+        return new RowReductionResult(ret, efResult.determinant(), efResult.rowOperations());
     }
 
     private static int pivotPos(Matrix m, int row) {
@@ -171,7 +184,7 @@ public class Algorithms {
     }
 
     public static int rank(Matrix m) {
-        final Matrix efMat = ef(m).getFirst();
+        final Matrix efMat = ef(m).result();
         int row;
         for (row = 0; row < m.colSize(); row++) {
             if (pivotPos(efMat, row) == m.rowSize()) {
@@ -186,7 +199,7 @@ public class Algorithms {
     }
 
     public static boolean isConsistent(Matrix m) {
-        final Matrix efMat = ef(m).getFirst();
+        final Matrix efMat = ef(m).result();
         for (int row = 0; row < m.colSize(); row++) {
             if (pivotPos(efMat, row) == m.rowSize() - 1) {
                 return false;
@@ -196,7 +209,7 @@ public class Algorithms {
     }
 
     public static VectorList columnSpace(Matrix m) {
-        final Matrix efMat = ef(m).getFirst();
+        final Matrix efMat = ef(m).result();
         List<Vector> includedColumns = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
             int pivotCol = pivotPos(efMat, row);
@@ -209,7 +222,7 @@ public class Algorithms {
     }
 
     public static VectorList rowSpace(Matrix m) {
-        final Matrix efMat = ef(m).getFirst();
+        final Matrix efMat = ef(m).result();
         List<Vector> includedRows = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
             int pivotCol = pivotPos(efMat, row);
@@ -230,10 +243,11 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).getFirst().getRowVector(vs.getVectorDimension() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.getVectorDimension() - 1);
         return !r.isZeroVector();
     }
 
+    // todo should this be renamed to `span`?
     public static VectorList independentSubset(VectorList vs) {
         return columnSpace(new Matrix(vs));
     }
@@ -244,7 +258,7 @@ public class Algorithms {
         }
         Matrix mat = new Matrix(vs);
         mat = mat.augmentColumns(u);
-        final Matrix efMat = ef(mat).getFirst();
+        final Matrix efMat = ef(mat).result();
         return isConsistent(efMat);
     }
 
