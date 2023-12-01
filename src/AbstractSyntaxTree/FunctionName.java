@@ -17,5 +17,8 @@ public enum FunctionName {
     SPANS,
     IS_BASIS,
     QR,
-    AUGMENT
+    AUGMENT,
+    EIGENSPACE,
+    IS_EIGENVALUE,
+    IS_EIGENVECTOR
 }

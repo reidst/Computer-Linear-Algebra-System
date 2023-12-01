@@ -49,6 +49,7 @@ public class Repl {
             if (ast != null) {
                 try {
                     Value result = interpreter.interpret(ast);
+                interpreter.assignAnswer(result);
                     System.out.println(result.print());
                 } catch (Exception e) {
                     System.out.println(e.toString());

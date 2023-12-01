@@ -16,8 +16,11 @@ public class LinearParser {
     private static final Parser<?> integerTokenizer = Terminals.IntegerLiteral.TOKENIZER;
     private static final Parser<?> doubleTokenizer = Terminals.DecimalLiteral.TOKENIZER;
 
-    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
-            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY","IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT");
+    private static final Terminals terminals = Terminals.operators(
+            "+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
+            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY",
+            "IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT","EIGENSPACE",
+            "IS_EIGENVALUE","IS_EIGENVECTOR");
 
     private static final Parser<?> identifiers = Terminals.Identifier.TOKENIZER;
 
@@ -80,7 +83,10 @@ public class LinearParser {
                 spansParser(arg),
                 isBasisParser(arg),
                 QRParser(arg),
-                augmentParser(arg)
+                augmentParser(arg),
+                eigenspaceParser(arg),
+                isEigenvectorParser(arg),
+                isEigenvalueParser(arg)
         );
     }
 
@@ -218,6 +224,30 @@ public class LinearParser {
                 argumentList(arg),
                 (unused, args) ->
                         new FunctionExpression(FunctionName.AUGMENT, args));
+    }
+
+    static Parser<FunctionExpression> eigenspaceParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("EIGENSPACE"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.EIGENSPACE, args));
+    }
+
+    static Parser<FunctionExpression> isEigenvectorParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IS_EIGENVECTOR"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IS_EIGENVECTOR, args));
+    }
+
+    static Parser<FunctionExpression> isEigenvalueParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IS_EIGENVALUE"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IS_EIGENVALUE, args));
     }
 
     static Parser<List<Expression>> argumentList(Parser<Expression> arg) {
