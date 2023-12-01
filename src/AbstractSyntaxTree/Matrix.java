@@ -94,7 +94,7 @@ Matrix implements Value permits Vector {
             );
         }
         List<Scalar> newValues = new ArrayList<>();
-        for (int col = 0; col < row_size; row++) {
+        for (int col = 0; col < row_size; col++) {
             newValues.add(get(row, col));
         }
         return new Vector(newValues);
