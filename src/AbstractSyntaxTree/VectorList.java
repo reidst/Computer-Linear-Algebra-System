@@ -46,12 +46,12 @@ public final class VectorList implements Value {
 
     public Matrix toMatrix() {
         List<Scalar> values = new ArrayList<Scalar>();
-        for (int n = 0; n < dimension; n++) {
+        for (int n = 0; n < vectorDimension; n++) {
             for (int m = 0; m < size(); m++) {
                 values.add(getVector(m).get(n));
             }
         }
-        return new Matrix(values, size(), dimension);
+        return new Matrix(values, size(), vectorDimension);
     }
 
     private List<Integer> findMaxLengths() {

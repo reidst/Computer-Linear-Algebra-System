@@ -108,6 +108,8 @@ public class Algorithms {
     public static RowReductionResult ef(Matrix m) {
         Matrix ret = new Matrix(m);
         Scalar determinant;
+        List<RowOperation> rowOperations = new ArrayList<>();
+        boolean isFraction = m.isFractionMatrix();
         if (isFraction) {
             determinant = new FractionScalar(1);
         } else {
@@ -373,7 +375,7 @@ public class Algorithms {
             }
             Vector v = W.getVector(k);
             Matrix Ukx = (new VectorList(uk)).toMatrix().augmentColumns(v);
-            Matrix rkm = rref(Ukx);
+            Matrix rkm = rref(Ukx).result();
             Vector rk = rkm.partitionColumns(k+1).getSecond().asVector();
             r.add(rk);
         }
@@ -385,11 +387,9 @@ public class Algorithms {
     public static Matrix QRAlgorithm(Matrix A) {
         Matrix Ak = A.toDoubleMatrix();
         while (!Ak.isUpperTriangular(Math.pow(10, -6))) {
-            System.out.println(Ak.print() + "\n");
             Pair<Matrix, Matrix> QR = QRFactorize(Ak);
             Matrix Q = QR.getFirst();
             Matrix R = QR.getSecond();
-            System.out.println(Q.multiply(R).print() + "\n");
             Ak = R.multiply(Q);
         }
         Ak = Ak.toFractionMatrix();

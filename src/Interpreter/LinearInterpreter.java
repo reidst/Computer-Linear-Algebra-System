@@ -123,11 +123,11 @@ public class LinearInterpreter {
     private Value interpretFunction(FunctionExpression functionExpression) {
         return switch (functionExpression.getFunc()) {
             case INVERSE -> throw new UnsupportedOperationException("That function does not exist");
-            case RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst()));
-            case EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).getFirst();
+            case RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
+            case EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
             //default -> throw new UnsupportedOperationException("That function does not exist");
             case SPAN -> Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
-            case DETERMINANT -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).getSecond();
+            case DETERMINANT -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).determinant();
             case PROJECT -> ((Vector)interpretExpression(functionExpression.getArgs().getFirst()));
             case DIM -> new FractionScalar(Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst())).size());
             case RANK -> new FractionScalar(Algorithms.rank((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
