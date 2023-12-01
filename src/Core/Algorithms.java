@@ -1,6 +1,7 @@
 package Core;
 
 import AbstractSyntaxTree.*;
+import AbstractSyntaxTree.Boolean;
 import AbstractSyntaxTree.Vector;
 import Utilities.*;
 import org.apache.commons.math3.util.Pair;
@@ -300,7 +301,7 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.getVectorDimension() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size() - 1);
         return !r.isZeroVector();
     }
 
@@ -394,5 +395,20 @@ public class Algorithms {
         }
         Ak = Ak.toFractionMatrix();
         return Ak;
+    }
+
+    public static VectorList eigenspace(Matrix A, Scalar lambda) {
+        return nullSpace(A.subtract(lambda.multiply(new Matrix(A.rowSize()))));
+    }
+
+    public static boolean isEigenVector(Vector v, Matrix A) {
+        List<Vector> vl = new ArrayList<>();
+        vl.add(v);
+        vl.add(A.multiply(v).asVector());
+        return !isLinearlyIndependent(new VectorList(vl));
+    }
+
+    public static boolean isEigenValue(Scalar lambda, Matrix A) {
+        return isLinearlyIndependent(eigenspace(A, lambda));
     }
 }

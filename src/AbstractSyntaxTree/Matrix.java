@@ -94,7 +94,7 @@ Matrix implements Value permits Vector {
             );
         }
         List<Scalar> newValues = new ArrayList<>();
-        for (int col = 0; col < row_size; row++) {
+        for (int col = 0; col < row_size; col++) {
             newValues.add(get(row, col));
         }
         return new Vector(newValues);
@@ -154,11 +154,11 @@ Matrix implements Value permits Vector {
     }
 
     public Matrix multiply(Matrix other) {
-        if (col_size != other.row_size) {
+        if (other.col_size != row_size) {
             throw new IllegalArgumentException(String.format(
-                    "Matrix with column size %d cannot be multiplied by matrix with row size %d.",
-                    col_size,
-                    other.row_size
+                    "Matrix with row size %d cannot be multiplied by matrix with column size %d.",
+                    row_size,
+                    other.col_size
             ));
         }
 
