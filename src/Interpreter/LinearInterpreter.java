@@ -1,6 +1,7 @@
 package Interpreter;
 
 import AbstractSyntaxTree.*;
+import AbstractSyntaxTree.Boolean;
 import Core.Algorithms;
 
 import java.util.HashMap;
@@ -39,11 +40,15 @@ public class LinearInterpreter {
         Value value = interpretExpression(unaryOperation.getExp());
         return switch (value) {
             case Scalar s -> switch (unaryOperation.getOp()) {
-                case NEG -> s.multiply(new Scalar(-1));
+                case NEG -> s.negate();
+            };
+            case Vector v -> switch (unaryOperation.getOp()) {
+                case NEG -> v.negate();
             };
             case Matrix s -> switch (unaryOperation.getOp()) {
-                case NEG -> s.multiply(new Scalar(-1));
+                case NEG -> s.negate();
             };
+            default -> throw new IllegalStateException("Unexpected value: \n" + value.print());
         };
     }
 
@@ -62,11 +67,35 @@ public class LinearInterpreter {
                     case MUL -> l.multiply(r);
                     default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
                 };
+                default -> throw new IllegalStateException("Unexpected value: \n" + right.print());
+            };
+            case Vector l -> switch (right) {
+                case Scalar r -> switch (binaryOperation.getOp()) {
+                    case MUL -> l.multiply(r);
+                    default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
+                };
+                case Vector r -> switch (binaryOperation.getOp()) {
+                    case ADD -> l.add(r).asVector();
+                    case SUB -> l.subtract(r).asVector();
+                    case MUL -> l.dot(r);
+                    default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
+                };
+                case Matrix r -> switch (binaryOperation.getOp()) {
+                    case ADD -> l.add(r.asVector()).asVector();
+                    case SUB -> l.subtract(r.asVector()).asVector();
+                    case MUL -> l.dot(r.asVector());
+                    default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
+                };
+                default -> throw new IllegalStateException("Unexpected value: \n" + right.print());
             };
             case Matrix l -> switch (right) {
                 case Scalar r -> switch (binaryOperation.getOp()) {
                     case MUL -> l.multiply(r);
                     case DIV -> l.divide(r);
+                    default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
+                };
+                case Vector r -> switch (binaryOperation.getOp()) {
+                    case MUL -> l.multiply(r).asVector();
                     default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
                 };
                 case Matrix r -> switch (binaryOperation.getOp()) {
@@ -75,7 +104,9 @@ public class LinearInterpreter {
                     case SUB -> l.subtract(r);
                     default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
                 };
+                default -> throw new IllegalStateException("Unexpected value: \n" + right.print());
             };
+            default -> throw new IllegalStateException("Unexpected value: \n" + left.print());
         };
     }
 
@@ -91,9 +122,24 @@ public class LinearInterpreter {
 
     private Value interpretFunction(FunctionExpression functionExpression) {
         return switch (functionExpression.getFunc()) {
-            case FunctionName.RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
-            case FunctionName.EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
-            default -> throw new UnsupportedOperationException("That function does not exist");
+            case INVERSE -> throw new UnsupportedOperationException("That function does not exist");
+            case RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
+            case EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
+            //default -> throw new UnsupportedOperationException("That function does not exist");
+            case SPAN -> Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
+            case DETERMINANT -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).determinant();
+            case PROJECT -> ((Vector)interpretExpression(functionExpression.getArgs().getFirst()));
+            case DIM -> new FractionScalar(Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst())).size());
+            case RANK -> new FractionScalar(Algorithms.rank((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
+            case NULLITY -> new FractionScalar(Algorithms.nullity((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
+            case IS_CONSISTENT -> new Boolean(Algorithms.isConsistent((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
+            case COL -> Algorithms.columnSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
+            case ROW -> Algorithms.rowSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
+            case NUL -> Algorithms.nullSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
+            case SPANS -> new Boolean(Algorithms.spans((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (VectorList) interpretExpression(functionExpression.getArgs().getLast())));
+            case IS_BASIS -> new Boolean(Algorithms.isBasis((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
+            case QR -> Algorithms.QRAlgorithm((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
+            case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augmentColumns((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
         };
     }
 }

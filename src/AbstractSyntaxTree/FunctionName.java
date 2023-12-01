@@ -5,5 +5,17 @@ public enum FunctionName {
     RREF,
     EF,
     SPAN,
-    DETERMINANT
+    DETERMINANT,
+    PROJECT,
+    DIM,
+    RANK,
+    NULLITY,
+    IS_CONSISTENT,
+    COL,
+    ROW,
+    NUL,
+    SPANS,
+    IS_BASIS,
+    QR,
+    AUGMENT
 }

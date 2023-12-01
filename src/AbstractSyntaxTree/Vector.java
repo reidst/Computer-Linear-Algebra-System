@@ -2,7 +2,7 @@ package AbstractSyntaxTree;
 
 import java.util.List;
 
-public final class Vector extends Matrix {
+public final class Vector extends Matrix implements Value {
 
     public Vector(List<Scalar> values) {
         super(values, 1, values.size());
@@ -21,6 +21,14 @@ public final class Vector extends Matrix {
         return values.get(i);
     }
 
+    public Scalar norm() {
+        return dot(this).sqrt();
+    }
+
+    public Vector normalize() {
+        return this.divide(this.norm()).asVector();
+    }
+
     public boolean isZeroVector() {
         return this.values.stream().allMatch(v -> v.equals(0));
     }
@@ -31,10 +39,16 @@ public final class Vector extends Matrix {
     }
 
     public Scalar dot(Vector other) {
+        boolean isFraction = isFractionMatrix();
         if (getDimension() != other.getDimension()) {
             throw new IllegalArgumentException("Vectors must have the same dimension to perform dot product.");
         }
-        Scalar sum = new Scalar(0);
+        Scalar sum;
+        if (isFraction) {
+            sum = new FractionScalar(0);
+        } else {
+            sum = new DoubleScalar(0);
+        }
         for (int i = 0; i < getDimension(); i++) {
             sum = sum.add(get(i).multiply(other.get(i)));
         }

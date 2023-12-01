@@ -4,7 +4,9 @@ import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 
-public sealed class Matrix implements Value permits Vector {
+public sealed class
+
+Matrix implements Value permits Vector {
     final List<Scalar> values;
     int row_size;
     int col_size;
@@ -15,7 +17,7 @@ public sealed class Matrix implements Value permits Vector {
         this.col_size = col_size;
     }
     public Matrix(Matrix other) {
-        this.values = new ArrayList<Scalar>(other.col_size * other.row_size);
+        this.values = new ArrayList<>(other.col_size * other.row_size);
         for (int i = 0; i < other.row_size * other.col_size; i++) {
             this.values.add(other.values.get(i));
         }
@@ -23,21 +25,30 @@ public sealed class Matrix implements Value permits Vector {
         this.col_size = other.col_size;
     }
     public Matrix(int dim) {
+        boolean isFraction = isFractionMatrix();
         this.row_size = dim;
         this.col_size = dim;
-        this.values = new ArrayList<Scalar>();
+        this.values = new ArrayList<>();
         for (int i = 0; i < dim*dim; i++) {
-            this.values.add(new Scalar(0));
+            if (isFraction) {
+                this.values.add(new FractionScalar(0));
+            } else {
+                this.values.add(new DoubleScalar(0));
+            }
         }
         for (int i = 0; i < dim; i++) {
-            this.values.set(i*dim+i, new Scalar(1));
+            if (isFraction) {
+                this.values.set(i*dim+i, new FractionScalar(1));
+            } else {
+                this.values.set(i*dim+i, new DoubleScalar(1));
+            }
         }
     }
 
     public Matrix(VectorList vs) {
         this.row_size = vs.size();
         this.col_size = vs.getVectorDimension();
-        this.values = new ArrayList<Scalar>(row_size * col_size);
+        this.values = new ArrayList<>(row_size * col_size);
         for (int row = 0; row < col_size; row++) {
             for (int col = 0; col < row_size; col++) {
                 this.values.add(vs.getVector(col).get(row));
@@ -69,7 +80,7 @@ public sealed class Matrix implements Value permits Vector {
                     String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
             );
         }
-        List<Scalar> newValues = new ArrayList<>(col_size);
+        List<Scalar> newValues = new ArrayList<>();
         for (int row = 0; row < col_size; row++) {
             newValues.add(get(row, col));
         }
@@ -82,8 +93,8 @@ public sealed class Matrix implements Value permits Vector {
                     String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
             );
         }
-        List<Scalar> newValues = new ArrayList<>(row_size);
-        for (int col = 0; col < row_size; col++) {
+        List<Scalar> newValues = new ArrayList<>();
+        for (int col = 0; col < row_size; row++) {
             newValues.add(get(row, col));
         }
         return new Vector(newValues);
@@ -154,7 +165,7 @@ public sealed class Matrix implements Value permits Vector {
         Matrix ret = new Matrix(new ArrayList<Scalar>(col_size*other.row_size), other.row_size, col_size);
 
         for (int i = 0; i < other.row_size*col_size; i++) {
-            ret.values.add(new Scalar(0));
+            ret.values.add(new DoubleScalar(0));
             for (int j = 0; j < row_size; j++) {
                 Scalar current = ret.values.get(i);
                 Scalar a = values.get((i/other.row_size)*row_size+j);
@@ -187,6 +198,14 @@ public sealed class Matrix implements Value permits Vector {
             ret.values.set(i, values.get(i).subtract(other.values.get(i)));
         }
         return ret;
+    }
+
+    public Matrix negate() {
+        List<Scalar> l = new ArrayList<>();
+        for (int i = 0; i < col_size*row_size; i++) {
+            l.add(values.get(i).negate());
+        }
+        return new Matrix(l, row_size, col_size);
     }
 
     public Matrix augmentColumns(Matrix other) {
@@ -299,6 +318,20 @@ public sealed class Matrix implements Value permits Vector {
         return true;
     }
 
+    public boolean isUpperTriangular(double epsilon) {
+        if (row_size != col_size) {
+            return false;
+        }
+        for (int row = 1; row < col_size; row++) {
+            for (int col = 0; col < row; col++) {
+                if (!get(row, col).equals(0, epsilon)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public boolean isLowerTriangular() {
         if (row_size != col_size) {
             return false;
@@ -363,5 +396,30 @@ public sealed class Matrix implements Value permits Vector {
             }
         }
         return stringBuilder.toString();
+    }
+
+    public boolean isFractionMatrix() {
+        for (int i = 0; i < row_size * col_size; i++) {
+            if (values.get(i) instanceof DoubleScalar) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Matrix toDoubleMatrix() {
+        List<Scalar> nvalues = new ArrayList<>();
+        for (int i = 0; i < row_size * col_size; i++) {
+            nvalues.add(new DoubleScalar(values.get(i)));
+        }
+        return new Matrix(nvalues, row_size, col_size);
+    }
+
+    public Matrix toFractionMatrix() {
+        List<Scalar> nvalues = new ArrayList<>();
+        for (int i = 0; i < row_size * col_size; i++) {
+            nvalues.add(new FractionScalar(values.get(i)));
+        }
+        return new Matrix(nvalues, row_size, col_size);
     }
 }
