@@ -40,13 +40,13 @@ public class LinearInterpreter {
         Value value = interpretExpression(unaryOperation.getExp());
         return switch (value) {
             case Scalar s -> switch (unaryOperation.getOp()) {
-                case NEG -> s.multiply(new Scalar(-1));
+                case NEG -> s.negate();
             };
             case Vector v -> switch (unaryOperation.getOp()) {
-                case NEG -> v.multiply(new Scalar(-1));
+                case NEG -> v.negate();
             };
             case Matrix s -> switch (unaryOperation.getOp()) {
-                case NEG -> s.multiply(new Scalar(-1));
+                case NEG -> s.negate();
             };
             default -> throw new IllegalStateException("Unexpected value: \n" + value.print());
         };
@@ -129,15 +129,17 @@ public class LinearInterpreter {
             case SPAN -> Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
             case DETERMINANT -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).getSecond();
             case PROJECT -> ((Vector)interpretExpression(functionExpression.getArgs().getFirst()));
-            case DIM -> new Scalar(Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst())).size());
-            case RANK -> new Scalar(Algorithms.rank((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
-            case NULLITY -> new Scalar(Algorithms.nullity((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
+            case DIM -> new FractionScalar(Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst())).size());
+            case RANK -> new FractionScalar(Algorithms.rank((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
+            case NULLITY -> new FractionScalar(Algorithms.nullity((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
             case IS_CONSISTENT -> new Boolean(Algorithms.isConsistent((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
             case COL -> Algorithms.columnSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
             case ROW -> Algorithms.rowSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
             case NUL -> Algorithms.nullSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-            case SPANS -> new Boolean(Algorithms.spans((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
+            case SPANS -> new Boolean(Algorithms.spans((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (VectorList) interpretExpression(functionExpression.getArgs().getLast())));
             case IS_BASIS -> new Boolean(Algorithms.isBasis((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
+            case QR -> Algorithms.QRAlgorithm((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
+            case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augment((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
         };
     }
 }

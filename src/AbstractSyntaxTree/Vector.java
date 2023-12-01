@@ -21,6 +21,14 @@ public final class Vector extends Matrix implements Value {
         return values.get(i);
     }
 
+    public Scalar norm() {
+        return dot(this).sqrt();
+    }
+
+    public Vector normalize() {
+        return this.divide(this.norm()).asVector();
+    }
+
     public boolean isZeroVector() {
         return this.values.stream().allMatch(v -> v.equals(0));
     }
@@ -31,8 +39,14 @@ public final class Vector extends Matrix implements Value {
     }
 
     public Scalar dot(Vector other) {
+        boolean isFraction = isFractionMatrix();
         assert(getDimension() == other.getDimension());
-        Scalar sum = new Scalar(0);
+        Scalar sum;
+        if (isFraction) {
+            sum = new FractionScalar(0);
+        } else {
+            sum = new DoubleScalar(0);
+        }
         for (int i = 0; i < getDimension(); i++) {
             sum = sum.add(get(i).multiply(other.get(i)));
         }

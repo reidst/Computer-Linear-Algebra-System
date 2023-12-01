@@ -21,7 +21,7 @@ public class Algorithms {
         List<Scalar> values = new ArrayList<>();
         if (useRandomMatrix) {
             for (int i = 0; i < colSize * rowSize; i++) {
-                values.add(new Scalar((int)(Math.random() * 10)));
+                values.add(new FractionScalar((int)(Math.random() * 10)));
             }
         } else {
             for (int row = 0; row < colSize; row++) {
@@ -29,7 +29,7 @@ public class Algorithms {
                     System.out.printf("A[%d, %d]: ", row, col);
                     final int valueChoice = in.nextInt();
                     in.nextLine();
-                    values.add(new Scalar(valueChoice));
+                    values.add(new FractionScalar(valueChoice));
                 }
             }
         }
@@ -71,14 +71,22 @@ public class Algorithms {
         assert(rowSource >= 0 && rowSource < m.colSize());
         Matrix ret = new Matrix(m);
         for (int col = 0; col < m.rowSize(); col++) {
+            Scalar a = m.get(rowTarget, col);
+            Scalar b = scale.multiply((m.get(rowSource, col)));
             ret.set(rowTarget, col, m.get(rowTarget, col).add(scale.multiply(m.get(rowSource, col))));
         }
         return ret;
     }
 
     public static Pair<Matrix, Scalar> ef(Matrix m) {
+        boolean isFraction = m.isFractionMatrix();
         Matrix ret = new Matrix(m);
-        Scalar determinant = new Scalar(1);
+        Scalar determinant;
+        if (isFraction) {
+            determinant = new FractionScalar(1);
+        } else {
+            determinant = new DoubleScalar(1);
+        }
         do {
             // check if all rows have unique pivot columns
             Map<Integer, Integer> pivotRowMap = new HashMap<>();
@@ -99,8 +107,8 @@ public class Algorithms {
             }
             // two rows had a matching pivot column; perform a row replacement
             if (rowReplaceColumn != null) {
-                Scalar scale = ret.get(rowReplaceSource, rowReplaceColumn)
-                        .divide(ret.get(rowReplaceTarget, rowReplaceColumn))
+                Scalar scale = ret.get(rowReplaceTarget, rowReplaceColumn)
+                        .divide(ret.get(rowReplaceSource, rowReplaceColumn))
                         .negate();
                 ret = rowReplace(ret, rowReplaceTarget, rowReplaceSource, scale);
             } else {
@@ -121,7 +129,12 @@ public class Algorithms {
                     }
                 }
                 if (m.colSize() == m.rowSize()) {
-                    Scalar diag = new Scalar(1);
+                    Scalar diag;
+                    if (isFraction) {
+                        diag = new FractionScalar(1);
+                    } else {
+                        diag = new DoubleScalar(1);
+                    }
                     for (int i = 0; i < m.colSize(); i++) {
                         diag = diag.multiply(ret.get(i, i));
                     }
@@ -258,5 +271,57 @@ public class Algorithms {
 
     public static boolean isBasis(VectorList vs) {
         return vs.size() == vs.getVectorDimension() && isLinearlyIndependent(vs);
+    }
+
+    public static VectorList gramSchmidt(VectorList vs) {
+        List<Vector> vl = new ArrayList<Vector>();
+        for (int i = 0; i < vs.size(); i++) {
+            Vector vi = vs.getVector(i);
+            for (int j = 0; j < i; j++) {
+                Scalar num = vs.getVector(i).dot(vl.get(j));
+                Scalar denom = vl.get(j).dot(vl.get(j));
+                Scalar div = num.divide(denom);
+                Vector sub = div.multiply(vl.get(j)).asVector();
+                vi = vi.subtract(sub).asVector();
+            }
+            vl.add(vi);
+        }
+        return new VectorList(vl);
+    }
+
+    public static Pair<Matrix, Matrix> QRFactorize(Matrix A) {
+        VectorList W = columnSpace(A);
+        if (W.size() != A.rowSize()) {
+            throw new IllegalArgumentException("The columns of A must form a basis for Col A");
+        }
+        VectorList U = gramSchmidt(W).normalize();
+        List<Vector> r = new ArrayList<Vector>();
+        for (int k = 0; k < W.size(); k++) {
+            List<Vector> uk = new ArrayList<Vector>();
+            for (int j = 0; j <= k; j++) {
+                uk.add(U.getVector(j));
+            }
+            Vector v = W.getVector(k);
+            Matrix Ukx = (new VectorList(uk)).toMatrix().augment(v);
+            Matrix rkm = rref(Ukx);
+            Vector rk = rkm.partition(k+1).getSecond().asVector();
+            r.add(rk);
+        }
+        Matrix Q = U.toMatrix();
+        Matrix R = (new VectorList(r)).toMatrix();
+        return new Pair<>(Q, R);
+    }
+
+    public static Matrix QRAlgorithm(Matrix A) {
+        Matrix Ak = A.toDoubleMatrix();
+        for (int k = 0; k < 3; k++) {
+            System.out.println(Ak.print());
+            Pair<Matrix, Matrix> QR = QRFactorize(Ak);
+            Matrix Q = QR.getFirst();
+            Matrix R = QR.getSecond();
+            Ak = R.multiply(Q);
+        }
+        Ak = Ak.toFractionMatrix();
+        return Ak;
     }
 }

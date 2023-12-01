@@ -2,6 +2,7 @@ package Parser;
 
 import AbstractSyntaxTree.*;
 import org.jparsec.*;
+import org.junit.runner.manipulation.Ordering;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +17,7 @@ public class LinearParser {
     private static final Parser<?> doubleTokenizer = Terminals.DecimalLiteral.TOKENIZER;
 
     private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
-            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY","IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS");
+            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY","IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT");
 
     private static final Parser<?> identifiers = Terminals.Identifier.TOKENIZER;
 
@@ -77,7 +78,9 @@ public class LinearParser {
                 rowfParser(arg),
                 nulParser(arg),
                 spansParser(arg),
-                isBasisParser(arg)
+                isBasisParser(arg),
+                QRParser(arg),
+                augmentParser(arg)
         );
     }
 
@@ -201,6 +204,22 @@ public class LinearParser {
                         new FunctionExpression(FunctionName.IS_BASIS, args));
     }
 
+    static Parser<FunctionExpression> QRParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("QR"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.QR, args));
+    }
+
+    static Parser<FunctionExpression> augmentParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("AUGMENT"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.AUGMENT, args));
+    }
+
     static Parser<List<Expression>> argumentList(Parser<Expression> arg) {
         return parens(arg.sepBy(terminals.token(",")));
     }
@@ -257,11 +276,11 @@ public class LinearParser {
     }
 
     private static Parser<Scalar> decimalScalar() {
-        return Terminals.DecimalLiteral.PARSER.map(s -> new Scalar(Double.parseDouble(s)));
+        return Terminals.DecimalLiteral.PARSER.map(s -> new FractionScalar(Double.parseDouble(s)));
     }
 
     private static Parser<Scalar> integerScalar() {
-        return Terminals.IntegerLiteral.PARSER.map(s -> new Scalar(Integer.parseInt(s)));
+        return Terminals.IntegerLiteral.PARSER.map(s -> new FractionScalar(Integer.parseInt(s)));
     }
 
     // Operators

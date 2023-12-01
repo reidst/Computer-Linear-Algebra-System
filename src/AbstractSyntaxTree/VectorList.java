@@ -18,6 +18,14 @@ public final class VectorList implements Value {
         }
     }
 
+    public VectorList normalize() {
+        List<Vector> vl = new ArrayList<Vector>();
+        for (int i = 0; i < this.size(); i++) {
+            vl.add(this.getVector(i).normalize());
+        }
+        return new VectorList(vl);
+    }
+
     public int getVectorDimension() {
         return dimension;
     }
@@ -33,6 +41,16 @@ public final class VectorList implements Value {
             );
         }
         return vectors.get(i);
+    }
+
+    public Matrix toMatrix() {
+        List<Scalar> values = new ArrayList<Scalar>();
+        for (int n = 0; n < dimension; n++) {
+            for (int m = 0; m < size(); m++) {
+                values.add(getVector(m).get(n));
+            }
+        }
+        return new Matrix(values, size(), dimension);
     }
 
     private List<Integer> findMaxLengths() {

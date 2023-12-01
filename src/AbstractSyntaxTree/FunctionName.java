@@ -15,5 +15,7 @@ public enum FunctionName {
     ROW,
     NUL,
     SPANS,
-    IS_BASIS
+    IS_BASIS,
+    QR,
+    AUGMENT
 }
