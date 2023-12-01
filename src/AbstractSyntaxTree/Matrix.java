@@ -69,7 +69,7 @@ public sealed class Matrix implements Value permits Vector {
                     String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
             );
         }
-        List<Scalar> newValues = new ArrayList<>();
+        List<Scalar> newValues = new ArrayList<>(col_size);
         for (int row = 0; row < col_size; row++) {
             newValues.add(get(row, col));
         }
@@ -82,8 +82,8 @@ public sealed class Matrix implements Value permits Vector {
                     String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
             );
         }
-        List<Scalar> newValues = new ArrayList<>();
-        for (int col = 0; col < row_size; row++) {
+        List<Scalar> newValues = new ArrayList<>(row_size);
+        for (int col = 0; col < row_size; col++) {
             newValues.add(get(row, col));
         }
         return new Vector(newValues);
@@ -197,15 +197,16 @@ public sealed class Matrix implements Value permits Vector {
                     other.col_size
             ));
         }
-        Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
-        for (int i = 0; i < ret.row_size*ret.col_size; i++) {
-            if (i%col_size - row_size < 0) {
-                ret.values.set(i, values.get(i % col_size + (i / (row_size + other.row_size)) * row_size));
-            } else {
-                ret.values.set(i, other.values.get(i % col_size + (i / (row_size + other.row_size)) * other.row_size - row_size));
+        List<Scalar> newValues = new ArrayList<>(col_size * (row_size + other.row_size));
+        for (int row = 0; row < col_size; row++) {
+            for (int col = 0; col < row_size; col++) {
+                newValues.add(get(row, col));
+            }
+            for (int col = 0; col < other.row_size; col++) {
+                newValues.add(other.get(row, col));
             }
         }
-        return ret;
+        return new Matrix(newValues, row_size + other.row_size, col_size);
     }
 
     public Matrix augmentRows(Matrix other) {
@@ -276,8 +277,8 @@ public sealed class Matrix implements Value permits Vector {
 
     public Matrix transpose() {
         List<Scalar> transposedValues = new ArrayList<>(row_size * col_size);
-        for (int row = 0; row < col_size; row++) {
-            for (int col = 0; col < row_size; col++) {
+        for (int row = 0; row < row_size; row++) {
+            for (int col = 0; col < col_size; col++) {
                 transposedValues.add(get(col, row)); // NOTE: col and row are reversed
             }
         }
