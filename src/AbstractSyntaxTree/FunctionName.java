@@ -22,4 +22,7 @@ public enum FunctionName {
     ORTHO_BASIS,
     IN_SPAN,
     IS_INDEPENDENT
+    EIGENSPACE,
+    IS_EIGENVALUE,
+    IS_EIGENVECTOR
 }
