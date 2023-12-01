@@ -38,7 +38,7 @@ Matrix implements Value permits Vector {
         }
         for (int i = 0; i < dim; i++) {
             if (isFraction) {
-                this.values.set(i*dim+i, new DoubleScalar(1));
+                this.values.set(i*dim+i, new FractionScalar(1));
             } else {
                 this.values.set(i*dim+i, new DoubleScalar(1));
             }
@@ -75,7 +75,11 @@ Matrix implements Value permits Vector {
     }
 
     public Vector getColumnVector(int col) {
-        assert(0 <= col && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
         List<Scalar> newValues = new ArrayList<>();
         for (int row = 0; row < col_size; row++) {
             newValues.add(get(row, col));
@@ -84,7 +88,11 @@ Matrix implements Value permits Vector {
     }
 
     public Vector getRowVector(int row) {
-        assert(0 <= row && row < col_size);
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         List<Scalar> newValues = new ArrayList<>();
         for (int col = 0; col < row_size; row++) {
             newValues.add(get(row, col));
@@ -102,14 +110,30 @@ Matrix implements Value permits Vector {
     }
 
     public Scalar get(int row, int col) {
-        assert(row >= 0 && row < col_size);
-        assert(col >= 0 && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         return values.get(row * row_size + col);
     }
 
     public void set(int row, int col, Scalar value) {
-        assert(row >= 0 && row < col_size);
-        assert(col >= 0 && col < row_size);
+        if (col < 0 || col >= row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Column index %d out of bounds for matrix with %d columns.", col, row_size)
+            );
+        }
+        if (row < 0 || row >= col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, col_size)
+            );
+        }
         values.set(row * row_size + col, value);
     }
 
@@ -130,7 +154,13 @@ Matrix implements Value permits Vector {
     }
 
     public Matrix multiply(Matrix other) {
-        assert(col_size == other.row_size);
+        if (col_size != other.row_size) {
+            throw new IllegalArgumentException(String.format(
+                    "Matrix with column size %d cannot be multiplied by matrix with row size %d.",
+                    col_size,
+                    other.row_size
+            ));
+        }
 
         Matrix ret = new Matrix(new ArrayList<Scalar>(col_size*other.row_size), other.row_size, col_size);
 
@@ -147,8 +177,9 @@ Matrix implements Value permits Vector {
     }
 
     public Matrix add(Matrix other) {
-        assert(col_size == other.col_size);
-        assert(row_size == other.row_size);
+        if (col_size != other.col_size || row_size != other.row_size) {
+            throw new IllegalArgumentException("Matrices must have same dimensions in order to add them.");
+        }
 
         Matrix ret = new Matrix(this);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
@@ -158,8 +189,9 @@ Matrix implements Value permits Vector {
     }
 
     public Matrix subtract(Matrix other) {
-        assert(col_size == other.col_size);
-        assert(row_size == other.row_size);
+        if (col_size != other.col_size || row_size != other.row_size) {
+            throw new IllegalArgumentException("Matrices must have same dimensions in order to subtract them.");
+        }
 
         Matrix ret = new Matrix(this);
         for (int i = 0; i < ret.col_size*ret.row_size; i++) {
@@ -176,38 +208,89 @@ Matrix implements Value permits Vector {
         return new Matrix(l, row_size, col_size);
     }
 
-    public Matrix augment(Matrix other) {
-        assert(col_size == other.col_size);
-
-        //Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
-        List<Scalar> r = new ArrayList<>();
-        for (int i = 0; i < ((row_size+other.row_size)*col_size); i++) {
-            if (i%(row_size + other.row_size) < row_size) {
-                r.add(values.get((i % (row_size + other.row_size)) + (row_size * i / (row_size + other.row_size))));
-            } else {
-                r.add(other.values.get((i % (row_size + other.row_size) - row_size) + (other.row_size * (i / (row_size + other.row_size)))));
+    public Matrix augmentColumns(Matrix other) {
+        if (col_size != other.col_size) {
+            throw new IllegalArgumentException(String.format(
+                    "Cannot column-augment matrix with %d rows with matrix with %d rows.",
+                    col_size,
+                    other.col_size
+            ));
+        }
+        Matrix ret = new Matrix(new ArrayList<Scalar>(row_size*col_size + other.row_size*other.col_size), row_size+other.row_size, col_size);
+        for (int i = 0; i < ret.row_size*ret.col_size; i++) {
+            if (i%col_size - row_size < 0) {
+                ret.values.set(i, values.get(i % col_size + (i / (row_size + other.row_size)) * row_size));
+           } else {
+                ret.values.set(i, other.values.get(i % col_size + (i / (row_size + other.row_size)) * other.row_size - row_size));
             }
         }
-        return new Matrix(r, row_size+other.row_size, col_size);
+        return ret;
     }
 
-    public Pair<Matrix, Matrix> partition(int index) {
-        if (index < 1 || index >= row_size) {
-            throw new IllegalArgumentException("Partition index out of bounds");
+    public Matrix augmentRows(Matrix other) {
+        if (row_size != other.row_size) {
+            throw new IllegalArgumentException("Cannot row-augment matrices with different row sizes.");
         }
+        List<Scalar> newValues = new ArrayList<>(values.size() + other.values.size());
+        newValues.addAll(values);
+        newValues.addAll(other.values);
+        return new Matrix(newValues, row_size, col_size + other.col_size);
+    }
 
-        List<Scalar> front = new ArrayList<Scalar>();
-        List<Scalar> back = new ArrayList<Scalar>();
-
-        for (int i = 0; i < col_size*row_size; i++) {
-            if (i % row_size < index) {
-                front.add(values.get(i));
-            } else {
-                back.add(values.get(i));
+    public Pair<Matrix, Matrix> partitionColumns(int col) {
+        if (col < 0 || col > row_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Cannot partition at column %d on matrix with %d columns.", col, row_size)
+            );
+        }
+        if (col == 0) {
+            return new Pair<>(null, new Matrix(this));
+        }
+        if (col == row_size) {
+            return new Pair<>(new Matrix(this), null);
+        }
+        List<Scalar> leftValues = new ArrayList<>(col * col_size);
+        List<Scalar> rightValues = new ArrayList<>((row_size - col) * col_size);
+        for (int r = 0; r < col_size; r++) {
+            for (int c = 0; c < row_size; c++) {
+                if (c < col) {
+                    leftValues.add(get(r, c));
+                } else {
+                    rightValues.add(get(r, c));
+                }
             }
         }
+        return new Pair<>(
+                new Matrix(leftValues, col, col_size),
+                new Matrix(rightValues, (row_size - col), col_size)
+        );
+    }
 
-        return new Pair<Matrix, Matrix>(new Matrix(front, index, col_size), new Matrix(back, row_size-index, col_size));
+    public Pair<Matrix, Matrix> partitionRows(int row) {
+        if (row < 0 || row > col_size) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Cannot partition at row %d on matrix with %d rows.", row, col_size)
+            );
+        }
+        if (row == 0) {
+            return new Pair<>(null, new Matrix(this));
+        }
+        if (row == col_size) {
+            return new Pair<>(new Matrix(this), null);
+        }
+        List<Scalar> leftValues = new ArrayList<>(row * row_size);
+        List<Scalar> rightValues = new ArrayList<>((col_size - row) * row_size);
+        for (int i = 0; i < col_size * row_size; i++) {
+            if (i < row * row_size) {
+                leftValues.add(values.get(i));
+            } else {
+                rightValues.add(values.get(i));
+            }
+        }
+        return new Pair<>(
+                new Matrix(leftValues, row_size, row),
+                new Matrix(rightValues, row_size, (col_size - row))
+        );
     }
 
     public Matrix transpose() {
@@ -221,7 +304,9 @@ Matrix implements Value permits Vector {
     }
 
     public boolean isUpperTriangular() {
-        assert(row_size == col_size);
+        if (row_size != col_size) {
+            return false;
+        }
         for (int row = 1; row < col_size; row++) {
             for (int col = 0; col < row; col++) {
                 if (!get(row, col).equals(0)) {
@@ -233,7 +318,9 @@ Matrix implements Value permits Vector {
     }
 
     public boolean isLowerTriangular() {
-        assert(row_size == col_size);
+        if (row_size != col_size) {
+            return false;
+        }
         for (int col = 1; col < row_size; col++) {
             for (int row = 0; row < col; row++) {
                 if (!get(row, col).equals(0)) {

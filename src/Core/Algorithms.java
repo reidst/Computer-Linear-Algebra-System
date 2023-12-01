@@ -42,12 +42,20 @@ public class Algorithms {
         System.out.println("Row-reduced echelon form:");
         System.out.println(rref(m).print());
         System.out.println("Determinant:");
-        System.out.println(efResult.getSecond().print());
+        System.out.println(efResult.getSecond() == null ? "N/A" : efResult.getSecond().print());
     }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {
-        assert(r1 >= 0 && r1 < m.colSize());
-        assert(r2 >= 0 && r2 < m.colSize());
+        if (r1 < 0 || r1 >= m.colSize()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", r1, m.colSize())
+            );
+        }
+        if (r2 < 0 || r2 >= m.colSize()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", r2, m.colSize())
+            );
+        }
         Matrix ret = new Matrix(m);
         for (int col = 0; col < m.rowSize(); col++) {
             ret.set(r1, col, m.get(r2, col));
@@ -57,8 +65,14 @@ public class Algorithms {
     }
 
     public static Matrix rowScale(Matrix m, int row, Scalar scale) {
-        assert(row >= 0 && row < m.colSize());
-        assert(!scale.equals(0));
+        if (row < 0 || row >= m.colSize()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, m.colSize())
+            );
+        }
+        if (scale.equals(0)) {
+            throw new IllegalArgumentException("Cannot scale a row by zero.");
+        }
         Matrix ret = new Matrix(m);
         for (int col = 0; col < m.rowSize(); col++) {
             ret.set(row, col, scale.multiply(m.get(row, col)));
@@ -67,8 +81,16 @@ public class Algorithms {
     }
 
     public static Matrix rowReplace(Matrix m, int rowTarget, int rowSource, Scalar scale) {
-        assert(rowTarget >= 0 && rowTarget < m.colSize());
-        assert(rowSource >= 0 && rowSource < m.colSize());
+        if (rowTarget < 0 || rowTarget >= m.colSize()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", rowTarget, m.colSize())
+            );
+        }
+        if (rowSource < 0 || rowSource >= m.colSize()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", rowSource, m.colSize())
+            );
+        }
         Matrix ret = new Matrix(m);
         for (int col = 0; col < m.rowSize(); col++) {
             Scalar a = m.get(rowTarget, col);
@@ -171,7 +193,11 @@ public class Algorithms {
     }
 
     private static int pivotPos(Matrix m, int row) {
-        assert(row >= 0 && row < m.colSize());
+        if (row < 0 || row >= m.colSize()) {
+            throw new IllegalArgumentException(
+                    String.format("Row index %d out of bounds for matrix with %d rows.", row, m.colSize())
+            );
+        }
         int zeroCount = 0;
         for (int col = 0; col < m.rowSize(); col++) {
             if (m.get(row, col).equals(0)) {
@@ -256,7 +282,7 @@ public class Algorithms {
             throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
         }
         Matrix mat = new Matrix(vs);
-        mat = mat.augment(u);
+        mat = mat.augmentColumns(u);
         final Matrix efMat = ef(mat).getFirst();
         return isConsistent(efMat);
     }

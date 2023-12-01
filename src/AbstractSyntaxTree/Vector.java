@@ -40,7 +40,9 @@ public final class Vector extends Matrix implements Value {
 
     public Scalar dot(Vector other) {
         boolean isFraction = isFractionMatrix();
-        assert(getDimension() == other.getDimension());
+        if (getDimension() != other.getDimension()) {
+            throw new IllegalArgumentException("Vectors must have the same dimension to perform dot product.");
+        }
         Scalar sum;
         if (isFraction) {
             sum = new FractionScalar(0);
