@@ -140,6 +140,10 @@ public class LinearInterpreter {
             case IS_BASIS -> new Boolean(Algorithms.isBasis((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
             case QR -> Algorithms.QRAlgorithm((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
             case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augmentColumns((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
+            case TRANSPOSE -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).transpose();
+            case ORTHO_BASIS -> Algorithms.gramSchmidt((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
+            case IN_SPAN -> new Boolean(Algorithms.withinSpan((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (Vector) interpretExpression(functionExpression.getArgs().getLast())));
+            case IS_INDEPENDENT -> new Boolean(Algorithms.isLinearlyIndependent((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
         };
     }
 }

@@ -16,8 +16,11 @@ public class LinearParser {
     private static final Parser<?> integerTokenizer = Terminals.IntegerLiteral.TOKENIZER;
     private static final Parser<?> doubleTokenizer = Terminals.DecimalLiteral.TOKENIZER;
 
-    private static final Terminals terminals = Terminals.operators("+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
-            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY","IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT");
+    private static final Terminals terminals = Terminals.operators(
+            "+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
+            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY",
+            "IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT",
+            "TRANSPOSE","ORTHO_BASIS","IN_SPAN","IS_INDEPENDENT");
 
     private static final Parser<?> identifiers = Terminals.Identifier.TOKENIZER;
 
@@ -80,7 +83,11 @@ public class LinearParser {
                 spansParser(arg),
                 isBasisParser(arg),
                 QRParser(arg),
-                augmentParser(arg)
+                augmentParser(arg),
+                transposeParser(arg),
+                orthoBasisParser(arg),
+                inSpanParser(arg),
+                isIndependentParser(arg)
         );
     }
 
@@ -218,6 +225,38 @@ public class LinearParser {
                 argumentList(arg),
                 (unused, args) ->
                         new FunctionExpression(FunctionName.AUGMENT, args));
+    }
+
+    static Parser<FunctionExpression> transposeParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("TRANSPOSE"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.TRANSPOSE, args));
+    }
+
+    static Parser<FunctionExpression> orthoBasisParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("ORTHO_BASIS"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.ORTHO_BASIS, args));
+    }
+
+    static Parser<FunctionExpression> inSpanParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IN_SPAN"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IN_SPAN, args));
+    }
+
+    static Parser<FunctionExpression> isIndependentParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IS_INDEPENDENT"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IS_INDEPENDENT, args));
     }
 
     static Parser<List<Expression>> argumentList(Parser<Expression> arg) {

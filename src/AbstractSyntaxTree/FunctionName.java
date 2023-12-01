@@ -17,5 +17,9 @@ public enum FunctionName {
     SPANS,
     IS_BASIS,
     QR,
-    AUGMENT
+    AUGMENT,
+    TRANSPOSE,
+    ORTHO_BASIS,
+    IN_SPAN,
+    IS_INDEPENDENT
 }
