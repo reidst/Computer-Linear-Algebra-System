@@ -48,6 +48,7 @@ public class Repl {
 
             if (ast != null) {
                 Value result = interpreter.interpret(ast);
+                interpreter.assignAnswer(result);
 
                 System.out.println(result.print());
             }
