@@ -269,7 +269,7 @@ public class Algorithms {
             throw new IllegalArgumentException("Vector must have same dimension as space that may span it.");
         }
         Matrix mat = new Matrix(vs);
-        mat = mat.augment(u);
+        mat = mat.augmentColumns(u);
         final Matrix efMat = ef(mat).getFirst();
         return isConsistent(efMat);
     }
