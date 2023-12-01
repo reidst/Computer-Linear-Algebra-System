@@ -104,7 +104,9 @@ public class LinearParser {
                 rowParser().sepBy1(terminals.token("|")),
                 terminals.token("]")).map(lists -> {
                     List<Scalar> values = lists.stream().flatMap(List::stream).toList();
-                    assert(values.size() == lists.getFirst().size() * lists.size());
+                    if (values.size() != lists.getFirst().size() * lists.size()) {
+                        throw new IllegalArgumentException("All rows in a matrix must be of equal length.");
+                    }
                     return new Matrix(values, lists.getFirst().size(), lists.size());
                 });
     }
