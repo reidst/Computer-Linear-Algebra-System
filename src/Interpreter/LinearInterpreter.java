@@ -47,7 +47,7 @@ public class LinearInterpreter {
                 case NEG -> s.negate();
             };
             case Vector v -> switch (unaryOperation.getOp()) {
-                case NEG -> v.negate();
+                case NEG -> v.negate().asVector();
             };
             case Matrix s -> switch (unaryOperation.getOp()) {
                 case NEG -> s.negate();
@@ -126,7 +126,7 @@ public class LinearInterpreter {
 
     private Value interpretFunction(FunctionExpression functionExpression) {
         return switch (functionExpression.getFunc()) {
-            case INVERSE -> throw new UnsupportedOperationException("That function does not exist");
+            case INVERSE -> Algorithms.inverse((Matrix)interpretExpression(functionExpression.getArgs().getFirst()));
             case RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
             case EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
             //default -> throw new UnsupportedOperationException("That function does not exist");

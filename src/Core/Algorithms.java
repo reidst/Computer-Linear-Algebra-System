@@ -224,6 +224,21 @@ public class Algorithms {
         return zeroCount;
     }
 
+    public static Matrix inverse(Matrix m) {
+        if (m.colSize() != m.rowSize()) {
+            throw new IllegalArgumentException("Cannot take inverse of a non-square matrix.");
+        }
+        RowReductionResult rrefResult = rref(m);
+        if (rrefResult.determinant().equals(0)) {
+            throw new IllegalStateException("Matrix is not invertible.");
+        }
+        Matrix ret = new Matrix(m.rowSize());
+        for (RowOperation rowOp : rrefResult.rowOperations()) {
+            ret = rowOp.apply(ret);
+        }
+        return ret;
+    }
+
     public static int rank(Matrix m) {
         final Matrix efMat = ef(m).result();
         int row;
@@ -301,7 +316,7 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size());
         return !r.isZeroVector();
     }
 
