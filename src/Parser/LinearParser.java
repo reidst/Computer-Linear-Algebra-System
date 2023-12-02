@@ -88,9 +88,9 @@ public class LinearParser {
                 orthoBasisParser(arg),
                 inSpanParser(arg),
                 isIndependentParser(arg),
-                isEigenvalueParser(arg)
+                isEigenvalueParser(arg),
                 isEigenvectorParser(arg),
-                eigenspaceParser(arg),
+                eigenspaceParser(arg)
         );
     }
 

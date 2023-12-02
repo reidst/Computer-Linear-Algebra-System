@@ -21,7 +21,7 @@ public enum FunctionName {
     TRANSPOSE,
     ORTHO_BASIS,
     IN_SPAN,
-    IS_INDEPENDENT
+    IS_INDEPENDENT,
     EIGENSPACE,
     IS_EIGENVALUE,
     IS_EIGENVECTOR
