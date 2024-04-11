@@ -316,7 +316,7 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size());
+        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size() - 1);
         return !r.isZeroVector();
     }
 
