@@ -67,6 +67,10 @@ public class LinearInterpreter {
                     case MUL -> l.multiply(r);
                     case DIV -> l.divide(r);
                 };
+                case Vector r -> switch (binaryOperation.getOp()) {
+                    case MUL -> r.multiply(l);
+                    default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
+                };
                 case Matrix r -> switch (binaryOperation.getOp()) {
                     case MUL -> l.multiply(r);
                     default -> throw new IllegalStateException("Unexpected value: " + binaryOperation.getOp());
