@@ -1,7 +1,6 @@
 package Core;
 
 import AbstractSyntaxTree.*;
-import AbstractSyntaxTree.Boolean;
 import AbstractSyntaxTree.Vector;
 import Utilities.*;
 import org.apache.commons.math3.util.Pair;
@@ -10,46 +9,47 @@ import java.util.*;
 
 public class Algorithms {
 
-    public static void main(String[] args) {
-        System.out.println("Matrix EF/RREF Test");
-        Scanner in = new Scanner(System.in);
-        System.out.print("Enter matrix dimensions: ");
-        final int colSize = in.nextInt();
-        final int rowSize = in.nextInt();
-        in.nextLine();
-        System.out.print("Generate a random matrix? (Y/n): ");
-        final String randomChoice = in.nextLine();
-        final boolean useRandomMatrix = !(randomChoice.equalsIgnoreCase("n"));
-        List<Scalar> values = new ArrayList<>();
-        if (useRandomMatrix) {
-            for (int i = 0; i < colSize * rowSize; i++) {
-                values.add(new FractionScalar((int)(Math.random() * 10)));
-            }
-        } else {
-            for (int row = 0; row < colSize; row++) {
-                for (int col = 0; col < rowSize; col++) {
-                    System.out.printf("A[%d, %d]: ", row, col);
-                    final int valueChoice = in.nextInt();
-                    in.nextLine();
-                    values.add(new FractionScalar(valueChoice));
-                }
-            }
-        }
-        Matrix m = new Matrix(values, rowSize, colSize);
-        System.out.println("Random matrix:");
-        System.out.println(m.print());
-        System.out.println("Echelon form:");
-        RowReductionResult efResult = ef(m);
-        System.out.println(efResult.result().print());
-        System.out.println("Row-reduced echelon form:");
-        System.out.println(rref(m).result().print());
-        System.out.println("Determinant:");
-        System.out.println(efResult.determinant() == null ? "N/A" : efResult.determinant().print());
-        System.out.printf("Column space (rank = %d):\n", rank(m));
-        System.out.println(columnSpace(m).print());
-        System.out.printf("Null space (nullity = %d):\n", nullity(m));
-        System.out.println(nullSpace(m).print());
-    }
+//    public static void main(String[] args) {
+//        System.out.println("Matrix EF/RREF Test");
+//        Scanner in = new Scanner(System.in);
+//        System.out.print("Enter matrix dimensions: ");
+//        final int colSize = in.nextInt();
+//        final int rowSize = in.nextInt();
+//        in.nextLine();
+//        System.out.print("Generate a random matrix? (Y/n): ");
+//        final String randomChoice = in.nextLine();
+//        final boolean useRandomMatrix = !(randomChoice.equalsIgnoreCase("n"));
+//        List<Scalar> values = new ArrayList<>();
+//        if (useRandomMatrix) {
+//            for (int i = 0; i < colSize * rowSize; i++) {
+//                values.add(new FractionScalar((int)(Math.random() * 10)));
+//            }
+//        } else {
+//            for (int row = 0; row < colSize; row++) {
+//                for (int col = 0; col < rowSize; col++) {
+//                    System.out.printf("A[%d, %d]: ", row, col);
+//                    final int valueChoice = in.nextInt();
+//                    in.nextLine();
+//                    values.add(new FractionScalar(valueChoice));
+//                }
+//            }
+//        }
+//        Matrix m = new Matrix(values, rowSize, colSize);
+//        System.out.println("Random matrix:");
+//        System.out.println(m.print());
+//        System.out.println("Echelon form:");
+//        RowReductionResult rrr = ef(m);
+//        System.out.println(rrr.efResult().print());
+//        System.out.println("Row-reduced echelon form:");
+//        rrr = rref(rrr);
+//        System.out.println(rrr.rrefResult().print());
+//        System.out.println("Determinant:");
+//        System.out.println(rrr.determinant() == null ? "N/A" : rrr.determinant().print());
+//        System.out.printf("Column space (rank = %d):\n", rank(m));
+//        System.out.println(columnSpace(m).print());
+//        System.out.printf("Null space (nullity = %d):\n", nullity(m));
+//        System.out.println(nullSpace(m).print());
+//    }
 
     public static Matrix rowSwap(Matrix m, int r1, int r2) {
         if (r1 < 0 || r1 >= m.colSize()) {
@@ -171,17 +171,44 @@ public class Algorithms {
                     for (int i = 0; i < m.colSize(); i++) {
                         diag = diag.multiply(ret.get(i, i));
                     }
-                    return new RowReductionResult(ret, determinant.multiply(diag), rowOperations);
+                    return new RowReductionResult(
+                            m,
+                            ret,
+                            null,
+                            determinant.multiply(diag),
+                            rowOperations,
+                            null);
                 }
-                return new RowReductionResult(ret, null, rowOperations);
+                return new RowReductionResult(
+                        m,
+                        ret,
+                        null,
+                        null,
+                        rowOperations,
+                        null);
             }
         } while (true);
     }
 
+    public static RowReductionResult ef(RowReductionResult rrr) {
+        if (rrr.efResult() != null) {
+            return rrr;
+        }
+        return ef(rrr.original());
+    }
+
     public static RowReductionResult rref(Matrix m) {
-        // convert to echelon form first
-        RowReductionResult efResult = ef(m);
-        Matrix ret = efResult.result();
+        return rref(ef(m));
+    }
+
+    public static RowReductionResult rref(RowReductionResult rrr) {
+        if (rrr.rrefResult() != null) {
+            return rrr;
+        }
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
+        Matrix ret = new Matrix(rrr.efResult());
+        List<RowOperation> rrefOperations = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
             // find the pivot column
             int pivotCol = 0;
@@ -194,17 +221,23 @@ public class Algorithms {
             // normalize each row
             Scalar normalizingScalar = ret.get(row, pivotCol).reciprocal();
             RowOperation rowOp = new RowScale(row, normalizingScalar);
-            efResult.rowOperations().add(rowOp);
+            rrefOperations.add(rowOp);
             ret = rowOp.apply(ret);
             // zero-out the column above the pivot
             for (int targetRow = row - 1; targetRow >= 0; targetRow--) {
                 Scalar targetScalar = ret.get(targetRow, pivotCol).negate();
                 rowOp = new RowReplace(targetRow, row, targetScalar);
-                efResult.rowOperations().add(rowOp);
+                rrefOperations.add(rowOp);
                 ret = rowOp.apply(ret);
             }
         }
-        return new RowReductionResult(ret, efResult.determinant(), efResult.rowOperations());
+        return new RowReductionResult(
+                m,
+                rrr.efResult(),
+                ret,
+                rrr.determinant(),
+                rrr.efOperations(),
+                rrefOperations);
     }
 
     private static int pivotPos(Matrix m, int row) {
@@ -224,75 +257,113 @@ public class Algorithms {
         return zeroCount;
     }
 
-    public static Matrix inverse(Matrix m) {
-        if (m.colSize() != m.rowSize()) {
-            throw new IllegalArgumentException("Cannot take inverse of a non-square matrix.");
-        }
-        RowReductionResult rrefResult = rref(m);
-        if (rrefResult.determinant().equals(0)) {
-            throw new IllegalStateException("Matrix is not invertible.");
-        }
-        Matrix ret = new Matrix(m.rowSize());
-        for (RowOperation rowOp : rrefResult.rowOperations()) {
-            ret = rowOp.apply(ret);
-        }
-        return ret;
+    public static Pair<Matrix, RowReductionResult> inverse(Matrix m) {
+        return inverse(rref(m));
     }
 
-    public static int rank(Matrix m) {
-        final Matrix efMat = ef(m).result();
+    public static Pair<Matrix, RowReductionResult> inverse(RowReductionResult rrr) {
+        rrr = rref(rrr);
+        if (rrr.original().colSize() != rrr.original().rowSize()) {
+            throw new IllegalArgumentException("Cannot take inverse of a non-square matrix.");
+        }
+        if (rrr.determinant().equals(0)) {
+            throw new IllegalStateException("Matrix is not invertible.");
+        }
+        Matrix ret = new Matrix(rrr.original().rowSize());
+        for (RowOperation rowOp : rrr.efOperations()) {
+            ret = rowOp.apply(ret);
+        }
+        for (RowOperation rowOp : rrr.rrefOperations()) {
+            ret = rowOp.apply(ret);
+        }
+        return new Pair<>(ret, rrr);
+    }
+
+    public static Pair<Integer, RowReductionResult> rank(Matrix m) {
+        return rank(ef(m));
+    }
+
+    public static Pair<Integer, RowReductionResult> rank(RowReductionResult rrr) {
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
         int row;
         for (row = 0; row < m.colSize(); row++) {
-            if (pivotPos(efMat, row) == m.rowSize()) {
+            if (pivotPos(rrr.efResult(), row) == m.rowSize()) {
                 break;
             }
         }
-        return row;
+        return new Pair<>(row, rrr);
     }
 
-    public static int nullity(Matrix m) {
-        return m.rowSize() - rank(m);
+    public static Pair<Integer, RowReductionResult> nullity(Matrix m) {
+        return nullity(ef(m));
     }
 
-    public static boolean isConsistent(Matrix m) {
-        final Matrix efMat = ef(m).result();
+    public static Pair<Integer, RowReductionResult> nullity(RowReductionResult rrr) {
+        Pair<Integer, RowReductionResult> rankPair = rank(rrr);
+        return new Pair<>(rrr.original().rowSize() - rankPair.getFirst(), rankPair.getSecond());
+    }
+
+    public static Pair<java.lang.Boolean, RowReductionResult> isConsistent(Matrix m) {
+        return isConsistent(ef(m));
+    }
+
+    public static Pair<java.lang.Boolean, RowReductionResult> isConsistent(RowReductionResult rrr) {
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
         for (int row = 0; row < m.colSize(); row++) {
-            if (pivotPos(efMat, row) == m.rowSize() - 1) {
-                return false;
+            if (pivotPos(rrr.efResult(), row) == m.rowSize() - 1) {
+                return new Pair<>(false, rrr);
             }
         }
-        return true;
+        return new Pair<>(true, rrr);
     }
 
-    public static VectorList columnSpace(Matrix m) {
-        final Matrix efMat = ef(m).result();
+    public static Pair<VectorList, RowReductionResult> columnSpace(Matrix m) {
+        return columnSpace(ef(m));
+    }
+
+    public static Pair<VectorList, RowReductionResult> columnSpace(RowReductionResult rrr) {
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
         List<Vector> includedColumns = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
-            int pivotCol = pivotPos(efMat, row);
+            int pivotCol = pivotPos(rrr.efResult(), row);
             if (pivotCol == m.rowSize()) {
                 break;
             }
             includedColumns.add(m.getColumnVector(pivotCol));
         }
-        return new VectorList(includedColumns);
+        return new Pair<>(new VectorList(includedColumns), rrr);
     }
 
-    public static VectorList rowSpace(Matrix m) {
-        final Matrix efMat = ef(m).result();
+    public static Pair<VectorList, RowReductionResult> rowSpace(Matrix m) {
+        return rowSpace(ef(m));
+    }
+
+    public static Pair<VectorList, RowReductionResult> rowSpace(RowReductionResult rrr) {
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
         List<Vector> includedRows = new ArrayList<>();
         for (int row = 0; row < m.colSize(); row++) {
-            int pivotCol = pivotPos(efMat, row);
+            int pivotCol = pivotPos(rrr.efResult(), row);
             if (pivotCol == m.rowSize()) {
                 break;
             }
             includedRows.add(m.getRowVector(row));
         }
-        return new VectorList(includedRows);
+        return new Pair<>(new VectorList(includedRows), rrr);
     }
 
-    public static VectorList nullSpace(Matrix m) {
+    public static Pair<VectorList, RowReductionResult> nullSpace(Matrix m) {
+        return nullSpace(ef(m));
+    }
+
+    public static Pair<VectorList, RowReductionResult> nullSpace(RowReductionResult rrr) {
+        rrr = ef(rrr);
+        Matrix m = rrr.original();
         Matrix aug = m.transpose();
-        List<RowOperation> ops = ef(aug).rowOperations();
+        List<RowOperation> ops = ef(aug).efOperations();
         aug = aug.augmentColumns(new Matrix(m.rowSize()));
         for (RowOperation op : ops) {
             aug = op.apply(aug);
@@ -306,7 +377,7 @@ public class Algorithms {
                 break;
             }
         }
-        return new VectorList(nullBasis);
+        return new Pair<>(new VectorList(nullBasis), rrr);
     }
 
     public static boolean isLinearlyIndependent(VectorList vs) {
@@ -316,7 +387,7 @@ public class Algorithms {
         if (vs.size() > vs.getVectorDimension()) {
             return false; // more vectors than dimensions
         }
-        Vector r = Algorithms.ef(new Matrix(vs)).result().getRowVector(vs.size() - 1);
+        Vector r = Algorithms.ef(new Matrix(vs)).efResult().getRowVector(vs.size() - 1);
         return !r.isZeroVector();
     }
 
@@ -324,7 +395,7 @@ public class Algorithms {
         if (vs.size() == 0) {
             return new VectorList(Collections.emptyList());
         }
-        return columnSpace(new Matrix(vs));
+        return columnSpace(new Matrix(vs)).getFirst();
     }
 
     public static boolean withinSpan(VectorList vs, Vector u) {
@@ -336,8 +407,8 @@ public class Algorithms {
         }
         Matrix mat = new Matrix(vs);
         mat = mat.augmentColumns(u);
-        final Matrix efMat = ef(mat).result();
-        return isConsistent(efMat);
+        final Matrix efMat = ef(mat).efResult();
+        return isConsistent(efMat).getFirst();
     }
 
     public static boolean spans(VectorList a, VectorList b) {
@@ -378,7 +449,7 @@ public class Algorithms {
     }
 
     public static Pair<Matrix, Matrix> QRFactorize(Matrix A) {
-        VectorList W = columnSpace(A);
+        VectorList W = columnSpace(A).getFirst();
         if (W.size() != A.rowSize()) {
             throw new IllegalArgumentException("The columns of A must form a basis for Col A");
         }
@@ -391,7 +462,7 @@ public class Algorithms {
             }
             Vector v = W.getVector(k);
             Matrix Ukx = (new VectorList(uk)).toMatrix().augmentColumns(v);
-            Matrix rkm = rref(Ukx).result();
+            Matrix rkm = rref(Ukx).rrefResult();
             Vector rk = rkm.partitionColumns(k+1).getSecond().asVector();
             r.add(rk);
         }
@@ -413,7 +484,7 @@ public class Algorithms {
     }
 
     public static VectorList eigenspace(Matrix A, Scalar lambda) {
-        return nullSpace(A.subtract(lambda.multiply(new Matrix(A.rowSize()))));
+        return nullSpace(A.subtract(lambda.multiply(new Matrix(A.rowSize())))).getFirst();
     }
 
     public static boolean isEigenVector(Vector v, Matrix A) {
