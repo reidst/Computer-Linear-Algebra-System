@@ -1,6 +1,7 @@
 package AbstractSyntaxTree;
 
 public enum FunctionName {
+    IDENTITY,
     INVERSE,
     RREF,
     EF,
@@ -21,7 +22,7 @@ public enum FunctionName {
     TRANSPOSE,
     ORTHO_BASIS,
     IN_SPAN,
-    IS_INDEPENDENT
+    IS_INDEPENDENT,
     EIGENSPACE,
     IS_EIGENVALUE,
     IS_EIGENVECTOR

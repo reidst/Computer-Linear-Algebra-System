@@ -18,7 +18,7 @@ public class LinearParser {
 
     private static final Terminals terminals = Terminals.operators(
             "+","-","*","/","(",")","=",";","[","]","|","<-",",","<",">","{","}",
-            "RREF","EF","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY",
+            "RREF","EF","IDENTITY","INVERSE","SPAN","DETERMINANT","PROJECT","DIM","RANK","NULLITY",
             "IS_CONSISTENT","COL","ROW","NUL","SPANS","IS_BASIS","QR","AUGMENT","EIGENSPACE",
             "IS_EIGENVALUE","IS_EIGENVECTOR","TRANSPOSE","ORTHO_BASIS","IN_SPAN","IS_INDEPENDENT");
 
@@ -69,6 +69,7 @@ public class LinearParser {
         return Parsers.or(
                 rrefParser(arg),
                 efParser(arg),
+                identityParser(arg),
                 inverseParser(arg),
                 spanParser(arg),
                 detParser(arg),
@@ -88,9 +89,9 @@ public class LinearParser {
                 orthoBasisParser(arg),
                 inSpanParser(arg),
                 isIndependentParser(arg),
-                isEigenvalueParser(arg)
+                isEigenvalueParser(arg),
                 isEigenvectorParser(arg),
-                eigenspaceParser(arg),
+                eigenspaceParser(arg)
         );
     }
 
@@ -108,6 +109,14 @@ public class LinearParser {
                 argumentList(arg),
                 (unused, args) ->
                         new FunctionExpression(FunctionName.EF, args));
+    }
+
+    static Parser<FunctionExpression> identityParser(Parser<Expression> arg) {
+        return Parsers.sequence(
+                terminals.token("IDENTITY"),
+                argumentList(arg),
+                (unused, args) ->
+                        new FunctionExpression(FunctionName.IDENTITY, args));
     }
 
     static Parser<FunctionExpression> inverseParser(Parser<Expression> arg) {
