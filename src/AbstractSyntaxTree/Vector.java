@@ -35,7 +35,7 @@ public final class Vector extends Matrix implements Value {
 
     @Override
     public Vector multiply(Scalar s) {
-        return (Vector)super.multiply(s);
+        return super.multiply(s).asVector();
     }
 
     public Scalar dot(Vector other) {
