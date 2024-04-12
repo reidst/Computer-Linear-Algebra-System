@@ -1,6 +1,7 @@
 package AbstractSyntaxTree;
 
 public enum FunctionName {
+    IDENTITY,
     INVERSE,
     RREF,
     EF,

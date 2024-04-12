@@ -132,6 +132,20 @@ public class LinearInterpreter {
     private Value interpretFunction(FunctionExpression functionExpression) {
         Expression arg = functionExpression.getArgs().getFirst();
         switch (functionExpression.getFunc()) {
+            case IDENTITY: {
+                switch (interpretExpression(arg)) {
+                    case Scalar s: {
+                        try {
+                            return new Matrix(Integer.parseInt(s.print()));
+                        } catch (NumberFormatException ignored) {
+                            throw new IllegalArgumentException("Invalid type: IDENTITY requires a natural number.");
+                        }
+                    }
+                    default: {
+                        throw new IllegalArgumentException("Invalid type: IDENTITY requires a natural number.");
+                    }
+                }
+            }
             case INVERSE: {
                 Pair<Matrix, RowReductionResult> resultPair = switch (interpretExpression(arg)) {
                     case Matrix m -> Algorithms.inverse(m);
