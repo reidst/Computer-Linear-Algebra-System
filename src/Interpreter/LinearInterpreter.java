@@ -148,7 +148,7 @@ public class LinearInterpreter {
                 if (arg instanceof Variable) {
                     variableMap.put(((Variable) arg).getName(), result);
                 }
-                return result;
+                return result.rrefResult();
             }
             case EF: {
                 RowReductionResult result = switch (interpretExpression(arg)) {
@@ -159,7 +159,7 @@ public class LinearInterpreter {
                 if (arg instanceof Variable) {
                     variableMap.put(((Variable) arg).getName(), result);
                 }
-                return result;
+                return result.efResult();
             }
             case SPAN: {
                 return switch (interpretExpression(arg)) {
@@ -278,51 +278,92 @@ public class LinearInterpreter {
                 };
             }
             case QR: {
-
+                return switch (interpretExpression(arg)) {
+                    case Matrix m -> Algorithms.QRAlgorithm(m);
+                    case RowReductionResult rrr -> Algorithms.QRAlgorithm(rrr.original());
+                    default -> throw new IllegalArgumentException("Invalid type: QR requires a matrix.");
+                };
             }
             case AUGMENT: {
+                Matrix mat1 = switch (interpretExpression(arg)) {
+                    case Matrix m -> m;
+                    case RowReductionResult rrr -> rrr.original();
+                    default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices.");
+                };
+                Matrix mat2 = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                    case Matrix m -> m;
+                    case RowReductionResult rrr -> rrr.original();
+                    default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices.");
+                };
+                return mat1.augmentColumns(mat2);
             }
             case EIGENSPACE: {
+                Matrix mat = switch (interpretExpression(arg)) {
+                    case Matrix m -> m;
+                    case RowReductionResult rrr -> rrr.original();
+                    default -> throw new IllegalArgumentException("Invalid type(s): EIGENSPACE requires a matrix and an eigenvalue.");
+                };
+                Scalar scalar = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                    case Scalar s -> s;
+                    default -> throw new IllegalArgumentException("Invalid type(s): EIGENSPACE requires a matrix and an eigenvalue.");
+                };
+                return Algorithms.eigenspace(mat, scalar);
             }
             case IS_EIGENVALUE: {
+                Matrix mat = switch (interpretExpression(arg)) {
+                    case Matrix m -> m;
+                    case RowReductionResult rrr -> rrr.original();
+                    default -> throw new IllegalArgumentException("Invalid type(s): IS_EIGENVALUE requires a matrix and an eigenvalue.");
+                };
+                Scalar scalar = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                    case Scalar s -> s;
+                    default -> throw new IllegalArgumentException("Invalid type(s): IS_EIGENVALUE requires a matrix and an eigenvalue.");
+                };
+                return new Boolean(Algorithms.isEigenValue(scalar, mat));
             }
             case IS_EIGENVECTOR: {
+                Matrix mat = switch (interpretExpression(arg)) {
+                    case Matrix m -> m;
+                    case RowReductionResult rrr -> rrr.original();
+                    default -> throw new IllegalArgumentException("Invalid type(s): IS_EIGENVECTOR requires a matrix and an eigenvector.");
+                };
+                Vector vec = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                    case Vector v -> v;
+                    default -> throw new IllegalArgumentException("Invalid type(s): IS_EIGENVECTOR requires a matrix and an eigenvector.");
+                };
+                return new Boolean(Algorithms.isEigenVector(vec, mat));
             }
             case TRANSPOSE: {
+                return switch (interpretExpression(arg)) {
+                    case Matrix m -> m.transpose();
+                    case RowReductionResult rrr -> rrr.original().transpose();
+                    default -> throw new IllegalArgumentException("Invalid type: TRANSPOSE requires a matrix.");
+                };
             }
             case ORTHO_BASIS: {
+                return switch (interpretExpression(arg)) {
+                    case VectorList vl -> Algorithms.gramSchmidt(vl);
+                    default -> throw new IllegalArgumentException("Invalid type: ORTHO_BASIS requires a set of vectors.");
+                };
             }
             case IN_SPAN: {
+                VectorList vecList = switch (interpretExpression(arg)) {
+                    case VectorList vl -> vl;
+                    default -> throw new IllegalArgumentException("Invalid type: IN_SPAN requires a set of vectors and a vector.");
+                };
+                Vector vec = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                    case Vector v -> v;
+                    default -> throw new IllegalArgumentException("Invalid type: IN_SPAN requires a set of vectors and a vector.");
+                };
+                return new Boolean(Algorithms.withinSpan(vecList, vec));
             }
             case IS_INDEPENDENT: {
+                return switch (interpretExpression(arg)) {
+                    case VectorList vl -> new Boolean(Algorithms.isLinearlyIndependent(vl));
+                    default -> throw new IllegalArgumentException("Invalid type: IS_INDEPENDENT requires a set of vectors.");
+                };
             }
         }
         throw new IllegalStateException("Unknown function: " + functionExpression.getFunc());
-
-//        return switch (functionExpression.getFunc()) {
-//            case INVERSE -> Algorithms.inverse((Matrix)interpretExpression(functionExpression.getArgs().getFirst()));
-//            case RREF -> Algorithms.rref((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
-//            case EF -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).result();
-//            case SPAN -> Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case DETERMINANT -> Algorithms.ef((Matrix)interpretExpression(functionExpression.getArgs().getFirst())).determinant();
-//            case PROJECT -> ((Vector)interpretExpression(functionExpression.getArgs().getFirst()));
-//            case DIM -> new FractionScalar(Algorithms.independentSubset((VectorList) interpretExpression(functionExpression.getArgs().getFirst())).size());
-//            case RANK -> new FractionScalar(Algorithms.rank((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
-//            case NULLITY -> new FractionScalar(Algorithms.nullity((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
-//            case IS_CONSISTENT -> new Boolean(Algorithms.isConsistent((Matrix) interpretExpression(functionExpression.getArgs().getFirst())));
-//            case COL -> Algorithms.columnSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case ROW -> Algorithms.rowSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case NUL -> Algorithms.nullSpace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case SPANS -> new Boolean(Algorithms.spans((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (VectorList) interpretExpression(functionExpression.getArgs().getLast())));
-//            case IS_BASIS -> new Boolean(Algorithms.isBasis((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
-//            case QR -> Algorithms.QRAlgorithm((Matrix) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case AUGMENT -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).augmentColumns((Matrix) interpretExpression(functionExpression.getArgs().getLast()));
-//            case EIGENSPACE -> Algorithms.eigenspace((Matrix) interpretExpression(functionExpression.getArgs().getFirst()), (Scalar) interpretExpression(functionExpression.getArgs().getLast()));
-//            case IS_EIGENVALUE -> new Boolean(Algorithms.isEigenValue((Scalar) interpretExpression(functionExpression.getArgs().getFirst()), (Matrix) interpretExpression(functionExpression.getArgs().getLast())));
-//            case IS_EIGENVECTOR -> new Boolean(Algorithms.isEigenVector((Vector) interpretExpression(functionExpression.getArgs().getFirst()), (Matrix) interpretExpression(functionExpression.getArgs().getLast())));
-//            case TRANSPOSE -> ((Matrix) interpretExpression(functionExpression.getArgs().getFirst())).transpose();
-//            case ORTHO_BASIS -> Algorithms.gramSchmidt((VectorList) interpretExpression(functionExpression.getArgs().getFirst()));
-//            case IN_SPAN -> new Boolean(Algorithms.withinSpan((VectorList) interpretExpression(functionExpression.getArgs().getFirst()), (Vector) interpretExpression(functionExpression.getArgs().getLast())));
-//            case IS_INDEPENDENT -> new Boolean(Algorithms.isLinearlyIndependent((VectorList) interpretExpression(functionExpression.getArgs().getFirst())));
     }
 }
