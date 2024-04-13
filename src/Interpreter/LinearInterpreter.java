@@ -303,17 +303,28 @@ public class LinearInterpreter {
                 };
             }
             case AUGMENT: {
-                Matrix mat1 = switch (interpretExpression(arg)) {
-                    case Matrix m -> m;
-                    case RowReductionResult rrr -> rrr.original();
-                    default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices.");
-                };
-                Matrix mat2 = switch (interpretExpression(functionExpression.getArgs().getLast())) {
-                    case Matrix m -> m;
-                    case RowReductionResult rrr -> rrr.original();
-                    default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices.");
-                };
-                return mat1.augmentColumns(mat2);
+                switch (interpretExpression(arg)) {
+                    case VectorList vl -> {
+                        return new Matrix(vl);
+                    }
+                    case Matrix mat1 -> {
+                        Matrix mat2 = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                            case Matrix m -> m;
+                            case RowReductionResult rrr -> rrr.original();
+                            default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices or a set of vectors.");
+                        };
+                        return mat1.augmentColumns(mat2);
+                    }
+                    case RowReductionResult rrr -> {
+                        Matrix mat2 = switch (interpretExpression(functionExpression.getArgs().getLast())) {
+                            case Matrix m -> m;
+                            case RowReductionResult rrr2 -> rrr2.original();
+                            default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices or a set of vectors.");
+                        };
+                        return rrr.original().augmentColumns(mat2);
+                    }
+                    default -> throw new IllegalArgumentException("Invalid type(s): AUGMENT requires two matrices or a set of vectors.");
+                }
             }
             case EIGENSPACE: {
                 Matrix mat = switch (interpretExpression(arg)) {
